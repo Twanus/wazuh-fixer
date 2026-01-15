@@ -1,0 +1,23 @@
+---
+galaxy_info:
+  author: Antoon Vereecken
+  description: "Remediate CIS Benchmark 9.3.6 (check 26135) - Ensure 'Windows Firewall: Public: Logging: Name' is set to '%SystemRoot%\\System32\\logfiles\\firewall\\publicfw.log'"
+  license: GPL-2.0-or-later
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - all
+  galaxy_tags:
+    - security
+    - wazuh
+    - hardening
+    - cis
+    - windows
+    - firewall
+    - public
+    - logging
+    - compliance
+    - remediation
+
+dependencies: []

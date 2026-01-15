@@ -1,0 +1,57 @@
+---
+# Fix Failed CIS Windows Benchmark Checks (26101-26131)
+# WARNING: This playbook excludes check 26110 (WinRM) which would disconnect your session
+# Usage: ansible-playbook -i inventory.ini playbooks/fix-failed-checks-26101-26131.yml
+
+- name: Fix Failed CIS Windows Benchmark Checks
+  hosts: windows
+  gather_facts: true
+  become: false
+  roles:
+    # System Services - Disable unnecessary services
+    - role: ../roles/win_ssdp_discovery_service_disabled  # noqa role-name[path] - 26101
+    - role: ../roles/win_upnp_device_host_disabled  # noqa role-name[path] - 26102
+    - role: ../roles/win_windows_error_reporting_service_disabled  # noqa role-name[path] - 26104
+    - role: ../roles/win_wecsvc_disabled  # noqa role-name[path] - 26105
+    - role: ../roles/win_wmp_network_sharing_service_disabled  # noqa role-name[path] - 26106
+    - role: ../roles/win_mobile_hotspot_service_disabled  # noqa role-name[path] - 26107
+    - role: ../roles/win_windows_push_notifications_system_service_disabled  # noqa role-name[path] - 26108
+    - role: ../roles/win_pushtoinstall_service_disabled  # noqa role-name[path] - 26109
+    # WARNING: win_winrm_service_disabled (26110) is EXCLUDED - would disconnect WinRM session!
+    - role: ../roles/win_xbox_accessory_management_service_disabled  # noqa role-name[path] - 26112
+    - role: ../roles/win_xbox_live_auth_manager_disabled  # noqa role-name[path] - 26113
+    - role: ../roles/win_xbox_live_game_save_disabled  # noqa role-name[path] - 26114
+    - role: ../roles/win_xbox_live_networking_service_disabled  # noqa role-name[path] - 26115
+    
+    # Windows Firewall - Domain Profile Settings
+    - role: ../roles/win_firewall_domain_disable_notifications  # noqa role-name[path] - 26118
+    - role: ../roles/win_firewall_domain_logging_name  # noqa role-name[path] - 26119
+    - role: ../roles/win_firewall_domain_logging_size_limit  # noqa role-name[path] - 26120
+    - role: ../roles/win_firewall_domain_logging_dropped_packets  # noqa role-name[path] - 26121
+    - role: ../roles/win_firewall_domain_logging_successful_connections  # noqa role-name[path] - 26122
+    
+    # Windows Firewall - Private Profile Settings
+    - role: ../roles/win_firewall_private_disable_notifications  # noqa role-name[path] - 26125
+    - role: ../roles/win_firewall_private_logging_name  # noqa role-name[path] - 26126
+    - role: ../roles/win_firewall_private_logging_size_limit  # noqa role-name[path] - 26127
+    - role: ../roles/win_firewall_private_logging_dropped_packets  # noqa role-name[path] - 26128
+    - role: ../roles/win_firewall_private_logging_successful_connections  # noqa role-name[path] - 26129
+
+  post_tasks:
+    - name: Summary - All failed checks have been remediated
+      ansible.builtin.debug:
+        msg: |
+          ========================================
+          Failed Checks Remediation Complete
+          ========================================
+          
+          The following checks have been applied:
+          - System Services (26101-26109, 26112-26115)
+          - Windows Firewall Domain Profile (26118-26122)
+          - Windows Firewall Private Profile (26125-26129)
+          
+          WARNING: Check 26110 (WinRM) was SKIPPED to prevent disconnecting your session.
+          If you need to apply it, do so manually or via another connection method.
+          
+          Note: Registry changes take effect after service restart or system reboot.
+          ========================================

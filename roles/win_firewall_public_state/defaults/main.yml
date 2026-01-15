@@ -1,0 +1,6 @@
+---
+# defaults file for win_firewall_public_state
+# CIS Benchmark 9.3.1 (check 26130) requires 'Windows Firewall: Public: Firewall state' to be set to 'On (recommended)'
+# This value can be overridden in playbooks or inventory
+# Value 0 = Off, 1 = On (recommended) (CIS requirement)
+win_firewall_public_state_enable_firewall: 1

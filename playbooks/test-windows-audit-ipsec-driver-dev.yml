@@ -1,0 +1,14 @@
+---
+# Test playbook for win_audit_ipsec_driver role (Development)
+# Usage: ansible-playbook -i inventory.ini playbooks/test-windows-audit-ipsec-driver-dev.yml
+
+- name: Test Windows Audit IPsec Driver Role (Development)
+  hosts: windows
+  gather_facts: true
+  become: false
+  roles:
+    - role: ../roles/win_audit_ipsec_driver  # noqa role-name[path]
+  post_tasks:
+    - name: Verify role completed successfully
+      ansible.builtin.debug:
+        msg: "Role execution completed. Check the output above for configuration."

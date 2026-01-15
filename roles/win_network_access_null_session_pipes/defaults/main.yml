@@ -1,0 +1,5 @@
+---
+# defaults file for win_network_access_null_session_pipes
+# CIS Benchmark 2.3.10.6 (check 26043) requires 'Network access: Named Pipes that can be accessed anonymously' to be set to 'None' (blank/empty)
+# This setting requires the NullSessionPipes registry value to be removed (not set)
+# No default variables needed - the value should simply not exist

@@ -1,0 +1,22 @@
+---
+galaxy_info:
+  author: Antoon Vereecken
+  description: "Remediate CIS Benchmark 5.3 (check 26074) - Ensure 'Computer Browser (Browser)' is set to 'Disabled' or 'Not Installed'"
+  license: GPL-2.0-or-later
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - all
+  galaxy_tags:
+    - security
+    - wazuh
+    - hardening
+    - cis
+    - windows
+    - services
+    - network
+    - compliance
+    - remediation
+
+dependencies: []

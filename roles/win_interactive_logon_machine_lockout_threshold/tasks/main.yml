@@ -1,0 +1,43 @@
+---
+# tasks file for win_interactive_logon_machine_lockout_threshold
+- name: Check current MaxDevicePasswordFailedAttempts setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System"
+    $regName = "MaxDevicePasswordFailedAttempts"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "0"
+    } else {
+      Write-Output $value
+    }
+  register: win_interactive_logon_machine_lockout_threshold_current_setting
+  changed_when: false
+
+- name: Display current MaxDevicePasswordFailedAttempts setting
+  ansible.builtin.debug:
+    msg: >
+      Current MaxDevicePasswordFailedAttempts: {{ win_interactive_logon_machine_lockout_threshold_current_setting.stdout | trim }} attempts
+      (0=Disabled - machine account lockout threshold disabled, 1-10=Enabled - machine locks after specified failed attempts)
+
+- name: Set MaxDevicePasswordFailedAttempts to required value
+  ansible.windows.win_regedit:
+    path: HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System
+    name: MaxDevicePasswordFailedAttempts
+    data: "{{ win_interactive_logon_machine_lockout_threshold_lockout_threshold }}"
+    type: dword
+  register: win_interactive_logon_machine_lockout_threshold_apply_setting
+  when: >
+    (win_interactive_logon_machine_lockout_threshold_current_setting.stdout | trim | int) == 0 or
+    (win_interactive_logon_machine_lockout_threshold_current_setting.stdout | trim | int) > 10 or
+    (win_interactive_logon_machine_lockout_threshold_current_setting.stdout | trim | int) != (win_interactive_logon_machine_lockout_threshold_lockout_threshold | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      MaxDevicePasswordFailedAttempts is already set to {{ win_interactive_logon_machine_lockout_threshold_current_setting.stdout | trim }} attempts,
+      which meets the requirement (10 or fewer invalid logon attempts, but not 0)
+  when: >
+    (win_interactive_logon_machine_lockout_threshold_current_setting.stdout | trim | int) != 0 and
+    (win_interactive_logon_machine_lockout_threshold_current_setting.stdout | trim | int) <= 10 and
+    (win_interactive_logon_machine_lockout_threshold_current_setting.stdout | trim | int) == (win_interactive_logon_machine_lockout_threshold_lockout_threshold | int)

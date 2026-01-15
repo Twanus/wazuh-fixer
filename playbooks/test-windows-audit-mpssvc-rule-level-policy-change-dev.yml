@@ -1,0 +1,14 @@
+---
+# Test playbook for win_audit_mpssvc_rule_level_policy_change role (Development)
+# Usage: ansible-playbook -i inventory.ini playbooks/test-windows-audit-mpssvc-rule-level-policy-change-dev.yml
+
+- name: Test Windows Audit MPSSVC Rule-Level Policy Change Role (Development)
+  hosts: windows
+  gather_facts: true
+  become: false
+  roles:
+    - role: ../roles/win_audit_mpssvc_rule_level_policy_change  # noqa role-name[path]
+  post_tasks:
+    - name: Verify role completed successfully
+      ansible.builtin.debug:
+        msg: "Role execution completed. Check the output above for configuration."

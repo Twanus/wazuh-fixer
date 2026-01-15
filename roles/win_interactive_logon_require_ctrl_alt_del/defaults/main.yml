@@ -1,0 +1,6 @@
+---
+# defaults file for win_interactive_logon_require_ctrl_alt_del
+# CIS Benchmark 2.3.7.1 (check 26022) requires 'Interactive logon: Do not require CTRL+ALT+DEL' to be set to 'Disabled'
+# This value can be overridden in playbooks or inventory
+# Value 0 = Disabled (CIS requirement - requires CTRL+ALT+DEL before logon)
+win_interactive_logon_require_ctrl_alt_del_disabled_value: 0

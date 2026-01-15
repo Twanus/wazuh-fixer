@@ -1,0 +1,64 @@
+---
+# tasks file for win_rename_guest_account
+- name: Check current guest account name
+  ansible.windows.win_shell: |
+    $guest = Get-CimInstance -Query "SELECT * FROM Win32_UserAccount WHERE LocalAccount = TRUE AND SID LIKE 'S-1-5-21-%-501'" -ErrorAction SilentlyContinue
+    if ($guest) {
+      Write-Output $guest.Name
+    } else {
+      Write-Output "NotFound"
+    }
+  register: win_rename_guest_account_current_name
+  changed_when: false
+
+- name: Check if guest account name is well-known
+  ansible.windows.win_shell: |
+    $currentName = "{{ win_rename_guest_account_current_name.stdout | trim }}"
+    $wellKnownNames = @(
+      "guest", "Guest", "Gast", "Invité", "Invitado", "Ospite", "Convidado",
+      "Gäst", "Gjest", "Gæst", "Vieras", "Гость", "Gość", "Vendég", "Host",
+      "Misafir", "Επισκέπτης", "ゲスト", "来宾", "來賓", "게스트", "ضيف", "אורח", "บัญชีผู้ใช้ทั่วไป"
+    )
+    if ($wellKnownNames -contains $currentName) {
+      Write-Output "WellKnown"
+    } else {
+      Write-Output "Custom"
+    }
+  register: win_rename_guest_account_name_status
+  changed_when: false
+  when: win_rename_guest_account_current_name.stdout | trim != "NotFound"
+
+- name: Display current guest account name
+  ansible.builtin.debug:
+    msg: "Current guest account name: {{ win_rename_guest_account_current_name.stdout | trim }} (Status: {{ win_rename_guest_account_name_status.stdout | trim if win_rename_guest_account_name_status.stdout is defined else 'N/A' }})"
+
+- name: Rename guest account
+  ansible.windows.win_shell: |
+    $guest = Get-CimInstance -Query "SELECT * FROM Win32_UserAccount WHERE LocalAccount = TRUE AND SID LIKE 'S-1-5-21-%-501'" -ErrorAction SilentlyContinue
+    if ($guest) {
+      try {
+        Rename-LocalUser -Name $guest.Name -NewName "{{ win_rename_guest_account_new_name }}" -ErrorAction Stop
+        Write-Output "Guest account renamed to {{ win_rename_guest_account_new_name }} successfully"
+      } catch {
+        Write-Error "Failed to rename guest account: $_"
+        exit 1
+      }
+    } else {
+      Write-Output "Guest account not found"
+      exit 1
+    }
+  register: win_rename_guest_account_rename_action
+  when: >
+    win_rename_guest_account_current_name.stdout | trim != "NotFound" and
+    win_rename_guest_account_name_status.stdout | trim == "WellKnown"
+  changed_when: true
+  notify: Win_rename_guest_account_verify_name
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      Guest account name '{{ win_rename_guest_account_current_name.stdout | trim }}' is not a well-known name,
+      which meets the CIS requirement (account should not be named Guest or other well-known names)
+  when: >
+    win_rename_guest_account_current_name.stdout | trim != "NotFound" and
+    (win_rename_guest_account_name_status.stdout | trim == "Custom" or win_rename_guest_account_name_status.stdout is not defined)

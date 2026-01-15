@@ -1,0 +1,24 @@
+---
+galaxy_info:
+  author: Antoon Vereecken
+  description: "Remediate CIS Benchmark 2.3.8.3 (check 26033) - Ensure 'Microsoft network client: Send unencrypted password to third-party SMB servers' is set to 'Disabled'"
+  license: GPL-2.0-or-later
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - all
+  galaxy_tags:
+    - security
+    - wazuh
+    - hardening
+    - cis
+    - windows
+    - network
+    - smb
+    - password
+    - encryption
+    - compliance
+    - remediation
+
+dependencies: []

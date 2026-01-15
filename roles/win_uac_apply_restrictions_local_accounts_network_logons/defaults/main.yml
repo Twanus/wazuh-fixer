@@ -1,0 +1,7 @@
+---
+# defaults file for win_uac_apply_restrictions_local_accounts_network_logons
+# CIS Benchmark 18.4.1 (check 26170) requires 'Apply UAC restrictions to local accounts on network logons' to be set to 'Enabled'
+# This value can be overridden in playbooks or inventory
+# Value 0 = Enabled - UAC restrictions applied to local accounts on network logons (CIS requirement - default Windows behavior)
+# Value 1 = Disabled - Full administrative rights for local accounts on network logons
+win_uac_apply_restrictions_local_accounts_network_logons_local_account_token_filter_policy: 0

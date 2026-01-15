@@ -1,0 +1,39 @@
+---
+# tasks file for win_force_audit_subcategory
+- name: Check current SCENoApplyLegacyAuditPolicy setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\System\CurrentControlSet\Control\Lsa"
+    $regName = "SCENoApplyLegacyAuditPolicy"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "0"
+    } else {
+      Write-Output $value
+    }
+  register: win_force_audit_subcategory_current_setting
+  changed_when: false
+
+- name: Display current SCENoApplyLegacyAuditPolicy setting
+  ansible.builtin.debug:
+    msg: >
+      Current SCENoApplyLegacyAuditPolicy: {{ win_force_audit_subcategory_current_setting.stdout | trim }}
+      (0=Disabled, 1=Enabled - forces audit policy subcategory settings to override audit policy category settings)
+
+- name: Set SCENoApplyLegacyAuditPolicy to Enabled
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Control\Lsa
+    name: SCENoApplyLegacyAuditPolicy
+    data: "{{ win_force_audit_subcategory_enabled_value }}"
+    type: dword
+  register: win_force_audit_subcategory_apply_setting
+  when: >
+    (win_force_audit_subcategory_current_setting.stdout | trim | int) != (win_force_audit_subcategory_enabled_value | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      SCENoApplyLegacyAuditPolicy is already set to {{ win_force_audit_subcategory_current_setting.stdout | trim }},
+      which meets the requirement (1 = Enabled - forces audit policy subcategory settings to override audit policy category settings)
+  when: >
+    (win_force_audit_subcategory_current_setting.stdout | trim | int) == (win_force_audit_subcategory_enabled_value | int)

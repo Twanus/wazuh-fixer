@@ -1,0 +1,39 @@
+---
+# tasks file for win_prevent_printer_drivers
+- name: Check current AddPrinterDrivers setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\System\CurrentControlSet\Control\Print\Providers\LanMan Print Services\Servers"
+    $regName = "AddPrinterDrivers"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "0"
+    } else {
+      Write-Output $value
+    }
+  register: win_prevent_printer_drivers_current_setting
+  changed_when: false
+
+- name: Display current AddPrinterDrivers setting
+  ansible.builtin.debug:
+    msg: >
+      Current AddPrinterDrivers: {{ win_prevent_printer_drivers_current_setting.stdout | trim }}
+      (0=Disabled - users can install printer drivers, 1=Enabled - prevents users from installing printer drivers)
+
+- name: Set AddPrinterDrivers to Enabled
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Control\Print\Providers\LanMan Print Services\Servers
+    name: AddPrinterDrivers
+    data: "{{ win_prevent_printer_drivers_enabled_value }}"
+    type: dword
+  register: win_prevent_printer_drivers_apply_setting
+  when: >
+    (win_prevent_printer_drivers_current_setting.stdout | trim | int) != (win_prevent_printer_drivers_enabled_value | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      AddPrinterDrivers is already set to {{ win_prevent_printer_drivers_current_setting.stdout | trim }},
+      which meets the requirement (1 = Enabled - prevents users from installing printer drivers)
+  when: >
+    (win_prevent_printer_drivers_current_setting.stdout | trim | int) == (win_prevent_printer_drivers_enabled_value | int)

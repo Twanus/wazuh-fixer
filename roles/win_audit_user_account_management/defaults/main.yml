@@ -1,0 +1,5 @@
+---
+# defaults file for win_audit_user_account_management
+# CIS Benchmark 17.2.3 (check 26142) requires 'Audit User Account Management' to be set to 'Success and Failure'
+# This role uses auditpol.exe to configure the audit policy subcategory
+# The required setting is "Success and Failure" which enables both success and failure auditing

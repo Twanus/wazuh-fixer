@@ -1,0 +1,25 @@
+---
+# metadata file for win_firewall_domain_logging_size_limit
+galaxy_info:
+  author: Antoon Vereecken
+  description: >
+    Remediates CIS Benchmark 9.1.5 (Wazuh check 26120): Ensure 'Windows Firewall: Domain: Logging: Size limit (KB)' is set to '16,384 KB or greater'.
+    Configures the Windows Firewall Domain Profile logging file size limit to meet CIS requirements.
+  license: GPL-2.0-or-later
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - all
+  galaxy_tags:
+    - security
+    - wazuh
+    - hardening
+    - cis
+    - windows
+    - firewall
+    - logging
+    - domain_profile
+    - compliance
+
+dependencies: []

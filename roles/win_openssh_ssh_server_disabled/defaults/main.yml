@@ -1,0 +1,7 @@
+---
+# defaults file for win_openssh_ssh_server_disabled
+# CIS Benchmark 5.12 (check 26083) requires 'OpenSSH SSH Server (sshd)' to be set to 'Disabled' or 'Not Installed'
+# This value can be overridden in playbooks or inventory
+# Service Start values: 0=Boot, 1=System, 2=Auto, 3=Manual, 4=Disabled
+# Value 4 = Disabled (CIS requirement - OpenSSH SSH Server is disabled)
+win_openssh_ssh_server_disabled_start_value: 4

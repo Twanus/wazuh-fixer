@@ -1,0 +1,22 @@
+---
+galaxy_info:
+  author: Antoon Vereecken
+  description: Remediate CIS Benchmark 1.2.4 (check 26007) - Ensure 'Reset account lockout counter after' is set to '15 or more minute(s)'
+  license: GPL-2.0-or-later
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - all
+  galaxy_tags:
+    - security
+    - wazuh
+    - hardening
+    - cis
+    - windows
+    - password
+    - lockout
+    - compliance
+    - remediation
+
+dependencies: []

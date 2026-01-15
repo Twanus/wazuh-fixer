@@ -1,0 +1,6 @@
+---
+# defaults file for win_firewall_public_logging_dropped_packets
+# CIS Benchmark 9.3.8 (check 26137) requires 'Windows Firewall: Public: Logging: Log dropped packets' to be set to 'Yes'
+# This value can be overridden in playbooks or inventory
+# Value 0 = No, 1 = Yes (CIS requirement)
+win_firewall_public_logging_dropped_packets_log_dropped_packets: 1

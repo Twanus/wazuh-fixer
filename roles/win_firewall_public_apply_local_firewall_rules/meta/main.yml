@@ -1,0 +1,23 @@
+---
+galaxy_info:
+  author: Antoon Vereecken
+  description: "Remediate CIS Benchmark 9.3.4 (check 26133) - Ensure 'Windows Firewall: Public: Settings: Apply local firewall rules' is set to 'No'"
+  license: GPL-2.0-or-later
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - all
+  galaxy_tags:
+    - security
+    - wazuh
+    - hardening
+    - cis
+    - windows
+    - firewall
+    - public
+    - network
+    - compliance
+    - remediation
+
+dependencies: []

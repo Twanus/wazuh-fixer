@@ -1,0 +1,22 @@
+---
+galaxy_info:
+  author: Antoon Vereecken
+  description: "Remediate CIS Benchmark 5.23 (check 26094) - Ensure 'Remote Procedure Call (RPC) Locator (RpcLocator)' is set to 'Disabled'"
+  license: GPL-2.0-or-later
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - all
+  galaxy_tags:
+    - security
+    - wazuh
+    - hardening
+    - cis
+    - windows
+    - rpc
+    - services
+    - compliance
+    - remediation
+
+dependencies: []

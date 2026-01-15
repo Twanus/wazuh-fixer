@@ -1,0 +1,23 @@
+---
+galaxy_info:
+  author: Antoon Vereecken
+  description: "Remediate CIS Benchmark 5.41 (check 26112) - Ensure 'Xbox Accessory Management Service (XboxGipSvc)' is set to 'Disabled'"
+  license: GPL-2.0-or-later
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - all
+  galaxy_tags:
+    - security
+    - wazuh
+    - hardening
+    - cis
+    - windows
+    - xboxgipsvc
+    - xbox-accessory-management-service
+    - services
+    - compliance
+    - remediation
+
+dependencies: []

@@ -1,0 +1,49 @@
+---
+# tasks file for win_firewall_public_logging_dropped_packets
+- name: Check current LogDroppedPackets setting for Public Profile Logging
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile\Logging"
+    $regName = "LogDroppedPackets"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "NOT_SET"
+    } else {
+      Write-Output $value
+    }
+  register: win_firewall_public_logging_dropped_packets_current_setting
+  changed_when: false
+
+- name: Display current LogDroppedPackets setting
+  ansible.builtin.debug:
+    msg: >
+      Current Public Profile LogDroppedPackets: {{ win_firewall_public_logging_dropped_packets_current_setting.stdout | trim }}
+      (0=No, 1=Yes, NOT_SET=Not configured)
+
+- name: Ensure PublicProfile\Logging registry key exists
+  ansible.windows.win_regedit:
+    path: HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile\Logging
+    state: present
+  register: win_firewall_public_logging_dropped_packets_ensure_key
+  when: win_firewall_public_logging_dropped_packets_current_setting.stdout | trim == "NOT_SET"
+  changed_when: true
+
+- name: Set LogDroppedPackets to Yes for Public Profile Logging
+  ansible.windows.win_regedit:
+    path: HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile\Logging
+    name: LogDroppedPackets
+    data: "{{ win_firewall_public_logging_dropped_packets_log_dropped_packets }}"
+    type: dword
+  register: win_firewall_public_logging_dropped_packets_apply_setting
+  when: >
+    (win_firewall_public_logging_dropped_packets_current_setting.stdout | trim == "NOT_SET") or
+    ((win_firewall_public_logging_dropped_packets_current_setting.stdout | trim | int) != (win_firewall_public_logging_dropped_packets_log_dropped_packets | int))
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      Public Profile LogDroppedPackets is already set to {{ win_firewall_public_logging_dropped_packets_current_setting.stdout | trim }},
+      which meets the requirement (1 = Yes)
+  when: >
+    (win_firewall_public_logging_dropped_packets_current_setting.stdout | trim != "NOT_SET") and
+    ((win_firewall_public_logging_dropped_packets_current_setting.stdout | trim | int) == (win_firewall_public_logging_dropped_packets_log_dropped_packets | int))

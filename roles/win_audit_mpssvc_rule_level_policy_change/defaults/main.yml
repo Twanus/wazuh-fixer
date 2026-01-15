@@ -1,0 +1,5 @@
+---
+# defaults file for win_audit_mpssvc_rule_level_policy_change
+# CIS Benchmark 17.7.4 (check 26158) requires 'Audit MPSSVC Rule-Level Policy Change' to be set to 'Success and Failure'
+# This role uses auditpol.exe to configure the audit policy subcategory
+# The required setting is "Success and Failure" which enables both success and failure auditing

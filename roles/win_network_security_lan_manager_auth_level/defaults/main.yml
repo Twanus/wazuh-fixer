@@ -1,0 +1,5 @@
+---
+# defaults file for win_network_security_lan_manager_auth_level
+# CIS Benchmark 2.3.11.7 (check 26056) requires 'Network security: LAN Manager authentication level' to be set to 'Send NTLMv2 response only. Refuse LM & NTLM'
+# This value can be overridden in playbooks or inventory
+win_network_security_lan_manager_auth_level_compatibility_level: 5

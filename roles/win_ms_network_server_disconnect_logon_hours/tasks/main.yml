@@ -1,0 +1,39 @@
+---
+# tasks file for win_ms_network_server_disconnect_logon_hours
+- name: Check current EnableForcedLogOff setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\System\CurrentControlSet\Services\LanManServer\Parameters"
+    $regName = "EnableForcedLogOff"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "0"
+    } else {
+      Write-Output $value
+    }
+  register: win_ms_network_server_disconnect_logon_hours_current_setting
+  changed_when: false
+
+- name: Display current EnableForcedLogOff setting
+  ansible.builtin.debug:
+    msg: >
+      Current EnableForcedLogOff: {{ win_ms_network_server_disconnect_logon_hours_current_setting.stdout | trim }}
+      (0=Disabled - clients not disconnected when logon hours expire, 1=Enabled - clients disconnected when logon hours expire)
+
+- name: Set EnableForcedLogOff to Enabled
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Services\LanManServer\Parameters
+    name: EnableForcedLogOff
+    data: "{{ win_ms_network_server_disconnect_logon_hours_enabled_value }}"
+    type: dword
+  register: win_ms_network_server_disconnect_logon_hours_apply_setting
+  when: >
+    (win_ms_network_server_disconnect_logon_hours_current_setting.stdout | trim | int) != (win_ms_network_server_disconnect_logon_hours_enabled_value | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      EnableForcedLogOff is already set to {{ win_ms_network_server_disconnect_logon_hours_current_setting.stdout | trim }},
+      which meets the requirement (1 = Enabled - clients disconnected when logon hours expire)
+  when: >
+    (win_ms_network_server_disconnect_logon_hours_current_setting.stdout | trim | int) == (win_ms_network_server_disconnect_logon_hours_enabled_value | int)

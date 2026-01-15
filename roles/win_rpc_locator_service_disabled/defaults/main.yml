@@ -1,0 +1,7 @@
+---
+# defaults file for win_rpc_locator_service_disabled
+# CIS Benchmark 5.23 (check 26094) requires 'Remote Procedure Call (RPC) Locator (RpcLocator)' to be set to 'Disabled'
+# This value can be overridden in playbooks or inventory
+# Service Start values: 0=Boot, 1=System, 2=Auto, 3=Manual, 4=Disabled
+# Value 4 = Disabled (CIS requirement - Remote Procedure Call (RPC) Locator service is disabled)
+win_rpc_locator_service_disabled_start_value: 4

@@ -1,0 +1,39 @@
+---
+# tasks file for win_network_security_kerberos_encryption_types
+- name: Check current SupportedEncryptionTypes setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\Kerberos\Parameters"
+    $regName = "SupportedEncryptionTypes"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "0"
+    } else {
+      Write-Output $value
+    }
+  register: win_network_security_kerberos_encryption_types_current_setting
+  changed_when: false
+
+- name: Display current SupportedEncryptionTypes setting
+  ansible.builtin.debug:
+    msg: >
+      Current SupportedEncryptionTypes: {{ win_network_security_kerberos_encryption_types_current_setting.stdout | trim }}
+      (Required values: 2147483644 or 2147483640 = AES128_HMAC_SHA1, AES256_HMAC_SHA1, Future encryption types)
+
+- name: Set SupportedEncryptionTypes to required value
+  ansible.windows.win_regedit:
+    path: HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\Kerberos\Parameters
+    name: SupportedEncryptionTypes
+    data: "{{ win_network_security_kerberos_encryption_types_value }}"
+    type: dword
+  register: win_network_security_kerberos_encryption_types_apply_setting
+  when: >
+    (win_network_security_kerberos_encryption_types_current_setting.stdout | trim | int) != (win_network_security_kerberos_encryption_types_value | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      SupportedEncryptionTypes is already set to {{ win_network_security_kerberos_encryption_types_current_setting.stdout | trim }},
+      which meets the requirement (2147483644 or 2147483640 = AES128_HMAC_SHA1, AES256_HMAC_SHA1, Future encryption types)
+  when: >
+    (win_network_security_kerberos_encryption_types_current_setting.stdout | trim | int) == (win_network_security_kerberos_encryption_types_value | int)

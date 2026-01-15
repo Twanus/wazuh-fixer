@@ -1,0 +1,23 @@
+---
+galaxy_info:
+  author: Antoon Vereecken
+  description: "Remediate CIS Benchmark 5.43 (check 26114) - Ensure 'Xbox Live Game Save (XblGameSave)' is set to 'Disabled'"
+  license: GPL-2.0-or-later
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - all
+  galaxy_tags:
+    - security
+    - wazuh
+    - hardening
+    - cis
+    - windows
+    - xblgamesave
+    - xbox-live-game-save
+    - services
+    - compliance
+    - remediation
+
+dependencies: []

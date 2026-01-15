@@ -1,0 +1,21 @@
+---
+# Test playbook for win_rename_admin_account role (Development)
+# Usage: ansible-playbook -i ../inventory.ini playbooks/test-windows-rename-admin-account-dev.yml
+#
+# Note: To customize the new administrator account name, uncomment and modify:
+# vars:
+#   win_rename_admin_account_new_name: "MyCustomAdmin"
+
+- name: Test Windows Rename Administrator Account Role (Development)
+  hosts: windows
+  gather_facts: true
+  become: false
+  # Override default if needed by uncommenting and setting:
+  # vars:
+  #   win_rename_admin_account_new_name: "MyCustomAdmin"
+  roles:
+    - role: ../roles/win_rename_admin_account  # noqa role-name[path]
+  post_tasks:
+    - name: Verify role completed successfully
+      ansible.builtin.debug:
+        msg: "Role execution completed. Check the output above for administrator account name."

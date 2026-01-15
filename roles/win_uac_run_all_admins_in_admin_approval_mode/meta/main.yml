@@ -1,0 +1,23 @@
+---
+galaxy_info:
+  author: Antoon Vereecken
+  description: "Remediate CIS Benchmark 2.3.17.6 (check 26069) - Ensure 'User Account Control: Run all administrators in Admin Approval Mode' is set to 'Enabled'"
+  license: GPL-2.0-or-later
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - all
+  galaxy_tags:
+    - security
+    - wazuh
+    - hardening
+    - cis
+    - windows
+    - uac
+    - user-account-control
+    - administrator
+    - compliance
+    - remediation
+
+dependencies: []

@@ -1,0 +1,5 @@
+---
+# defaults file for win_ms_network_client_plaintext_password
+# CIS Benchmark 2.3.8.3 (check 26033) requires 'Microsoft network client: Send unencrypted password to third-party SMB servers' to be set to 'Disabled'
+# This value can be overridden in playbooks or inventory
+win_ms_network_client_plaintext_password_disabled_value: 0

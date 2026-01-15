@@ -1,0 +1,6 @@
+---
+# defaults file for win_domain_encrypt_secure_channel_when_possible
+# CIS Benchmark 2.3.6.2 (check 26017) requires 'Domain member: Digitally encrypt secure channel data (when possible)' to be set to 'Enabled'
+# This value can be overridden in playbooks or inventory
+# Value 1 = Enabled (CIS requirement)
+win_domain_encrypt_secure_channel_when_possible_enabled_value: 1

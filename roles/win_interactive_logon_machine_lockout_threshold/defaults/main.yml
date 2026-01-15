@@ -1,0 +1,7 @@
+---
+# defaults file for win_interactive_logon_machine_lockout_threshold
+# CIS Benchmark 2.3.7.3 (check 26024) requires 'Interactive logon: Machine account lockout threshold' to be set to '10 or fewer invalid logon attempts, but not 0'
+# This value can be overridden in playbooks or inventory
+# Value must be between 1 and 10 (CIS requirement)
+# Note: Values from 1 to 3 will be interpreted as 4 by Windows
+win_interactive_logon_machine_lockout_threshold_lockout_threshold: 10

@@ -1,0 +1,23 @@
+---
+galaxy_info:
+  author: Antoon Vereecken
+  description: "Remediate CIS Benchmark 5.39 (check 26110) - Ensure 'Windows Remote Management (WS-Management) (WinRM)' is set to 'Disabled'"
+  license: GPL-2.0-or-later
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - all
+  galaxy_tags:
+    - security
+    - wazuh
+    - hardening
+    - cis
+    - windows
+    - winrm
+    - ws-management
+    - services
+    - compliance
+    - remediation
+
+dependencies: []

@@ -1,0 +1,7 @@
+---
+# defaults file for win_remote_access_auto_connection_manager_disabled
+# CIS Benchmark 5.19 (check 26090) requires 'Remote Access Auto Connection Manager (RasAuto)' to be set to 'Disabled'
+# This value can be overridden in playbooks or inventory
+# Service Start values: 0=Boot, 1=System, 2=Auto, 3=Manual, 4=Disabled
+# Value 4 = Disabled (CIS requirement - Remote Access Auto Connection Manager is disabled)
+win_remote_access_auto_connection_manager_disabled_start_value: 4

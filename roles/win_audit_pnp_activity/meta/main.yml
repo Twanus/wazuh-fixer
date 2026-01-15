@@ -1,0 +1,24 @@
+---
+galaxy_info:
+  author: Antoon Vereecken
+  description: "Remediate CIS Benchmark 17.3.1 (check 26143) - Ensure 'Audit PNP Activity' is set to include 'Success'"
+  license: GPL-2.0-or-later
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - all
+  galaxy_tags:
+    - security
+    - wazuh
+    - hardening
+    - cis
+    - windows
+    - audit
+    - compliance
+    - remediation
+    - pnp
+    - plug-and-play
+    - device-management
+
+dependencies: []

@@ -1,0 +1,6 @@
+---
+# defaults file for win_firewall_private_inbound_connections
+# CIS Benchmark 9.2.2 (check 26124) requires 'Windows Firewall: Private: Inbound connections' to be set to 'Block (default)'
+# This value can be overridden in playbooks or inventory
+# Value 0 = Allow, 1 = Block (default) (CIS requirement)
+win_firewall_private_inbound_connections_default_inbound_action: 1

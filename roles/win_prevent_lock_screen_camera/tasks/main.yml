@@ -1,0 +1,47 @@
+---
+# tasks file for win_prevent_lock_screen_camera
+- name: Check current NoLockScreenCamera setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Personalization"
+    $regName = "NoLockScreenCamera"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "NOT_SET"
+    } else {
+      Write-Output $value
+    }
+  register: win_prevent_lock_screen_camera_current_setting
+  changed_when: false
+
+- name: Display current NoLockScreenCamera setting
+  ansible.builtin.debug:
+    msg: "Current NoLockScreenCamera: {{ win_prevent_lock_screen_camera_current_setting.stdout | trim }} (0=Disabled/Not Set - lock screen camera allowed, 1=Enabled - lock screen camera prevented [CIS requirement], NOT_SET=Not configured)"
+
+- name: Ensure Personalization registry key exists
+  ansible.windows.win_regedit:
+    path: HKLM:\SOFTWARE\Policies\Microsoft\Windows\Personalization
+    state: present
+  register: win_prevent_lock_screen_camera_ensure_key
+  when: win_prevent_lock_screen_camera_current_setting.stdout | trim == "NOT_SET"
+  changed_when: true
+
+- name: Set NoLockScreenCamera to Enabled
+  ansible.windows.win_regedit:
+    path: HKLM:\SOFTWARE\Policies\Microsoft\Windows\Personalization
+    name: NoLockScreenCamera
+    data: "{{ win_prevent_lock_screen_camera_no_lock_screen_camera }}"
+    type: dword
+  register: win_prevent_lock_screen_camera_apply_setting
+  when: >
+    (win_prevent_lock_screen_camera_current_setting.stdout | trim == "NOT_SET") or
+    ((win_prevent_lock_screen_camera_current_setting.stdout | trim | int) != (win_prevent_lock_screen_camera_no_lock_screen_camera | int))
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      NoLockScreenCamera is already set to {{ win_prevent_lock_screen_camera_current_setting.stdout | trim }},
+      which meets the requirement (1 = Enabled - prevents enabling lock screen camera)
+  when: >
+    (win_prevent_lock_screen_camera_current_setting.stdout | trim != "NOT_SET") and
+    ((win_prevent_lock_screen_camera_current_setting.stdout | trim | int) == (win_prevent_lock_screen_camera_no_lock_screen_camera | int))

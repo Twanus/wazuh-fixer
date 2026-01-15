@@ -1,0 +1,39 @@
+---
+# tasks file for win_network_access_everyone_includes_anonymous
+- name: Check current EveryoneIncludesAnonymous setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\System\CurrentControlSet\Control\Lsa"
+    $regName = "EveryoneIncludesAnonymous"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "0"
+    } else {
+      Write-Output $value
+    }
+  register: win_network_access_everyone_includes_anonymous_current_setting
+  changed_when: false
+
+- name: Display current EveryoneIncludesAnonymous setting
+  ansible.builtin.debug:
+    msg: >
+      Current EveryoneIncludesAnonymous: {{ win_network_access_everyone_includes_anonymous_current_setting.stdout | trim }}
+      (0=Disabled - Everyone permissions do not apply to anonymous users [recommended], 1=Enabled - Everyone permissions apply to anonymous users)
+
+- name: Set EveryoneIncludesAnonymous to Disabled
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Control\Lsa
+    name: EveryoneIncludesAnonymous
+    data: "{{ win_network_access_everyone_includes_anonymous_disabled_value }}"
+    type: dword
+  register: win_network_access_everyone_includes_anonymous_apply_setting
+  when: >
+    (win_network_access_everyone_includes_anonymous_current_setting.stdout | trim | int) != (win_network_access_everyone_includes_anonymous_disabled_value | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      EveryoneIncludesAnonymous is already set to {{ win_network_access_everyone_includes_anonymous_current_setting.stdout | trim }},
+      which meets the requirement (0 = Disabled - Everyone permissions do not apply to anonymous users)
+  when: >
+    (win_network_access_everyone_includes_anonymous_current_setting.stdout | trim | int) == (win_network_access_everyone_includes_anonymous_disabled_value | int)

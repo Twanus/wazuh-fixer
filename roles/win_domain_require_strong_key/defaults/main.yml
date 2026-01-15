@@ -1,0 +1,6 @@
+---
+# defaults file for win_domain_require_strong_key
+# CIS Benchmark 2.3.6.6 (check 26021) requires 'Domain member: Require strong (Windows 2000 or later) session key' to be set to 'Enabled'
+# This value can be overridden in playbooks or inventory
+# Value 1 = Enabled (CIS requirement)
+win_domain_require_strong_key_enabled_value: 1

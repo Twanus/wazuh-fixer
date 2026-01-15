@@ -1,0 +1,39 @@
+---
+# tasks file for win_uac_secure_desktop_prompt
+- name: Check current PromptOnSecureDesktop setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System"
+    $regName = "PromptOnSecureDesktop"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "0"
+    } else {
+      Write-Output $value
+    }
+  register: win_uac_secure_desktop_prompt_current_setting
+  changed_when: false
+
+- name: Display current PromptOnSecureDesktop setting
+  ansible.builtin.debug:
+    msg: >
+      Current PromptOnSecureDesktop: {{ win_uac_secure_desktop_prompt_current_setting.stdout | trim }}
+      (0=Disabled - Standard elevation prompt, 1=Enabled - Secure desktop elevation prompt [recommended])
+
+- name: Set PromptOnSecureDesktop to Enabled
+  ansible.windows.win_regedit:
+    path: HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System
+    name: PromptOnSecureDesktop
+    data: "{{ win_uac_secure_desktop_prompt_prompt_on_secure_desktop }}"
+    type: dword
+  register: win_uac_secure_desktop_prompt_apply_setting
+  when: >
+    (win_uac_secure_desktop_prompt_current_setting.stdout | trim | int) != (win_uac_secure_desktop_prompt_prompt_on_secure_desktop | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      PromptOnSecureDesktop is already set to {{ win_uac_secure_desktop_prompt_current_setting.stdout | trim }},
+      which meets the requirement (1 = Enabled - Secure desktop elevation prompt)
+  when: >
+    (win_uac_secure_desktop_prompt_current_setting.stdout | trim | int) == (win_uac_secure_desktop_prompt_prompt_on_secure_desktop | int)

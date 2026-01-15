@@ -1,0 +1,23 @@
+---
+galaxy_info:
+  author: Antoon Vereecken
+  description: "Remediate CIS Benchmark 17.9.1 (check 26161) - Ensure 'Audit IPsec Driver' is set to 'Success and Failure'"
+  license: GPL-2.0-or-later
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - all
+  galaxy_tags:
+    - security
+    - wazuh
+    - hardening
+    - cis
+    - windows
+    - audit
+    - compliance
+    - remediation
+    - ipsec
+    - network
+
+dependencies: []

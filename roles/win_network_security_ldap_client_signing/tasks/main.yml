@@ -1,0 +1,39 @@
+---
+# tasks file for win_network_security_ldap_client_signing
+- name: Check current LDAPClientIntegrity setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\System\CurrentControlSet\Services\LDAP"
+    $regName = "LDAPClientIntegrity"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "0"
+    } else {
+      Write-Output $value
+    }
+  register: win_network_security_ldap_client_signing_current_setting
+  changed_when: false
+
+- name: Display current LDAPClientIntegrity setting
+  ansible.builtin.debug:
+    msg: >
+      Current LDAPClientIntegrity: {{ win_network_security_ldap_client_signing_current_setting.stdout | trim }}
+      (0=None - No signing, 1=Negotiate signing, 2=Require signing)
+
+- name: Set LDAPClientIntegrity to required value
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Services\LDAP
+    name: LDAPClientIntegrity
+    data: "{{ win_network_security_ldap_client_signing_value }}"
+    type: dword
+  register: win_network_security_ldap_client_signing_apply_setting
+  when: >
+    (win_network_security_ldap_client_signing_current_setting.stdout | trim | int) < (win_network_security_ldap_client_signing_value | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      LDAPClientIntegrity is already set to {{ win_network_security_ldap_client_signing_current_setting.stdout | trim }},
+      which meets the requirement (>= 1 = Negotiate signing or higher)
+  when: >
+    (win_network_security_ldap_client_signing_current_setting.stdout | trim | int) >= (win_network_security_ldap_client_signing_value | int)

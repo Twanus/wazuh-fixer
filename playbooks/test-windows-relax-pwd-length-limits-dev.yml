@@ -1,0 +1,15 @@
+---
+# Development test playbook - uses role directly from roles/ directory
+# Usage: ansible-playbook -i ../inventory.ini playbooks/test-windows-relax-pwd-length-limits-dev.yml
+
+- name: Test Windows Relax Minimum Password Length Limits Role (Development)
+  hosts: windows
+  gather_facts: true
+  become: false
+  roles:
+    # Use relative path for development/testing without installing collection
+    - role: ../roles/win_relax_pwd_length_limits  # noqa role-name[path]
+  post_tasks:
+    - name: Verify role completed successfully
+      ansible.builtin.debug:
+        msg: "Role execution completed. Check the output above for RelaxMinimumPasswordLengthLimits configuration."

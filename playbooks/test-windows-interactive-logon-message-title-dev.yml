@@ -1,0 +1,14 @@
+---
+# Test playbook for win_interactive_logon_message_title role (Development)
+# Usage: ansible-playbook -i ../inventory.ini playbooks/test-windows-interactive-logon-message-title-dev.yml
+
+- name: Test Windows Interactive Logon Message Title Role (Development)
+  hosts: windows
+  gather_facts: true
+  become: false
+  roles:
+    - role: ../roles/win_interactive_logon_message_title  # noqa role-name[path]
+  post_tasks:
+    - name: Verify role completed successfully
+      ansible.builtin.debug:
+        msg: "Role execution completed. Check the output above for LegalNoticeCaption configuration."

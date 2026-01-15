@@ -1,0 +1,64 @@
+---
+# tasks file for win_rename_admin_account
+- name: Check current administrator account name
+  ansible.windows.win_shell: |
+    $admin = Get-CimInstance -Query "SELECT * FROM Win32_UserAccount WHERE LocalAccount = TRUE AND SID LIKE 'S-1-5-21-%-500'" -ErrorAction SilentlyContinue
+    if ($admin) {
+      Write-Output $admin.Name
+    } else {
+      Write-Output "NotFound"
+    }
+  register: win_rename_admin_account_current_name
+  changed_when: false
+
+- name: Check if administrator account name is well-known
+  ansible.windows.win_shell: |
+    $currentName = "{{ win_rename_admin_account_current_name.stdout | trim }}"
+    $wellKnownNames = @(
+      "Admin", "Administrator", "Администратор", "Amministratore", "Beheerder",
+      "Järjestelmänvalvoja", "Správce", "Rendszergazda", "Yönetici", "Διαχειριστής",
+      "管理者", "管理员", "系統管理員", "관리자", "مسؤول", "מנהל", "ผู้ดูแลระบบ"
+    )
+    if ($wellKnownNames -contains $currentName) {
+      Write-Output "WellKnown"
+    } else {
+      Write-Output "Custom"
+    }
+  register: win_rename_admin_account_name_status
+  changed_when: false
+  when: win_rename_admin_account_current_name.stdout | trim != "NotFound"
+
+- name: Display current administrator account name
+  ansible.builtin.debug:
+    msg: "Current administrator account name: {{ win_rename_admin_account_current_name.stdout | trim }} (Status: {{ win_rename_admin_account_name_status.stdout | trim if win_rename_admin_account_name_status.stdout is defined else 'N/A' }})"
+
+- name: Rename administrator account
+  ansible.windows.win_shell: |
+    $admin = Get-CimInstance -Query "SELECT * FROM Win32_UserAccount WHERE LocalAccount = TRUE AND SID LIKE 'S-1-5-21-%-500'" -ErrorAction SilentlyContinue
+    if ($admin) {
+      try {
+        Rename-LocalUser -Name $admin.Name -NewName "{{ win_rename_admin_account_new_name }}" -ErrorAction Stop
+        Write-Output "Administrator account renamed to {{ win_rename_admin_account_new_name }} successfully"
+      } catch {
+        Write-Error "Failed to rename administrator account: $_"
+        exit 1
+      }
+    } else {
+      Write-Output "Administrator account not found"
+      exit 1
+    }
+  register: win_rename_admin_account_rename_action
+  when: >
+    win_rename_admin_account_current_name.stdout | trim != "NotFound" and
+    win_rename_admin_account_name_status.stdout | trim == "WellKnown"
+  changed_when: true
+  notify: Win_rename_admin_account_verify_name
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      Administrator account name '{{ win_rename_admin_account_current_name.stdout | trim }}' is not a well-known name,
+      which meets the CIS requirement (account should not be named Admin, Administrator, or other well-known names)
+  when: >
+    win_rename_admin_account_current_name.stdout | trim != "NotFound" and
+    (win_rename_admin_account_name_status.stdout | trim == "Custom" or win_rename_admin_account_name_status.stdout is not defined)

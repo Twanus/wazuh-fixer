@@ -1,0 +1,7 @@
+---
+# defaults file for win_routing_remote_access_service_disabled
+# CIS Benchmark 5.25 (check 26096) requires 'Routing and Remote Access (RemoteAccess)' to be set to 'Disabled'
+# This value can be overridden in playbooks or inventory
+# Service Start values: 0=Boot, 1=System, 2=Auto, 3=Manual, 4=Disabled
+# Value 4 = Disabled (CIS requirement - Routing and Remote Access service is disabled)
+win_routing_remote_access_service_disabled_start_value: 4

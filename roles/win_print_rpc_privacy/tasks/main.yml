@@ -1,0 +1,43 @@
+---
+# tasks file for win_print_rpc_privacy
+- name: Check current RpcAuthnLevelPrivacyEnabled setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\SYSTEM\CurrentControlSet\Control\Print"
+    $regName = "RpcAuthnLevelPrivacyEnabled"
+    if (Test-Path -Path $regPath) {
+      $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+      if ($null -eq $value) {
+        Write-Output "0"
+      } else {
+        Write-Output $value
+      }
+    } else {
+      Write-Output "0"
+    }
+  register: win_print_rpc_privacy_current_setting
+  changed_when: false
+
+- name: Display current RpcAuthnLevelPrivacyEnabled setting
+  ansible.builtin.debug:
+    msg: >
+      Current RpcAuthnLevelPrivacyEnabled: {{ win_print_rpc_privacy_current_setting.stdout | trim }}
+      (0=Disabled/Not Set - RPC packet level privacy not enforced, 1=Enabled - RPC packet level privacy enforced for incoming connections)
+
+- name: Set RpcAuthnLevelPrivacyEnabled to Enabled
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Control\Print
+    name: RpcAuthnLevelPrivacyEnabled
+    data: "{{ win_print_rpc_privacy_enabled_value }}"
+    type: dword
+  register: win_print_rpc_privacy_apply_setting
+  when: >
+    (win_print_rpc_privacy_current_setting.stdout | trim | int) != (win_print_rpc_privacy_enabled_value | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      RpcAuthnLevelPrivacyEnabled is already set to {{ win_print_rpc_privacy_current_setting.stdout | trim }},
+      which meets the requirement (1 = Enabled - RPC packet level privacy enforced for incoming connections)
+  when: >
+    (win_print_rpc_privacy_current_setting.stdout | trim | int) == (win_print_rpc_privacy_enabled_value | int)

@@ -1,0 +1,47 @@
+---
+# tasks file for win_network_access_null_session_shares
+- name: Check current NullSessionShares setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\System\CurrentControlSet\Services\LanManServer\Parameters"
+    $regName = "NullSessionShares"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "NOT_SET"
+    } else {
+      if ($value -is [System.Array]) {
+        $result = $value -join ","
+      } else {
+        $result = $value.ToString()
+      }
+      if ([string]::IsNullOrWhiteSpace($result)) {
+        Write-Output "EMPTY"
+      } else {
+        Write-Output $result
+      }
+    }
+  register: win_network_access_null_session_shares_current_setting
+  changed_when: false
+
+- name: Display current NullSessionShares setting
+  ansible.builtin.debug:
+    msg: >
+      Current NullSessionShares: {{ win_network_access_null_session_shares_current_setting.stdout | trim }}
+      (NOT_SET/EMPTY=None - no shares can be accessed anonymously [recommended], any value=Configured - listed shares can be accessed anonymously)
+
+- name: Remove NullSessionShares registry value to set it to None
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Services\LanManServer\Parameters
+    name: NullSessionShares
+    state: absent
+  register: win_network_access_null_session_shares_apply_setting
+  when: >
+    win_network_access_null_session_shares_current_setting.stdout | trim not in ["NOT_SET", "EMPTY"]
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      NullSessionShares is already set to None (value does not exist or is empty),
+      which meets the requirement (None - no shares can be accessed anonymously)
+  when: >
+    win_network_access_null_session_shares_current_setting.stdout | trim in ["NOT_SET", "EMPTY"]

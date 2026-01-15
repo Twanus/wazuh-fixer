@@ -1,0 +1,23 @@
+---
+galaxy_info:
+  author: Antoon Vereecken
+  description: "Remediate CIS Benchmark 9.1.2 (check 26117) - Ensure 'Windows Firewall: Domain: Inbound connections' is set to 'Block (default)'"
+  license: GPL-2.0-or-later
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - all
+  galaxy_tags:
+    - security
+    - wazuh
+    - hardening
+    - cis
+    - windows
+    - firewall
+    - domain
+    - network
+    - compliance
+    - remediation
+
+dependencies: []

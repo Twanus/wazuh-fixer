@@ -1,0 +1,42 @@
+---
+# tasks file for win_pwd_hist_size
+- name: Check current password history size
+  ansible.windows.win_shell: |
+    secedit /export /cfg $env:TEMP\secpol.cfg 2>&1 | Out-Null
+    $content = Get-Content $env:TEMP\secpol.cfg | Select-String "PasswordHistorySize"
+    Remove-Item $env:TEMP\secpol.cfg -ErrorAction SilentlyContinue
+    if ($content) {
+      $value = ($content -split '=')[1].Trim()
+      Write-Output $value
+    } else {
+      Write-Output "0"
+    }
+  register: win_pwd_hist_size_current_password_history
+  changed_when: false
+
+- name: Display current password history size
+  ansible.builtin.debug:
+    msg: "Current password history size: {{ win_pwd_hist_size_current_password_history.stdout }}"
+
+- name: Set password history size using net accounts
+  ansible.windows.win_shell: |
+    # Use net accounts command which is more reliable than secedit
+    $result = net accounts /uniquepw:{{ win_pwd_hist_size_password_history_size }} 2>&1
+    $exitCode = $LASTEXITCODE
+    if ($exitCode -eq 0) {
+      Write-Output "Password history policy set to {{ win_pwd_hist_size_password_history_size }} successfully"
+    } else {
+      Write-Error "Failed to set password history policy. Exit code: $exitCode, Output: $result"
+      exit $exitCode
+    }
+  register: win_pwd_hist_size_apply_policy
+  when: win_pwd_hist_size_current_password_history.stdout | int < win_pwd_hist_size_password_history_size | int
+  changed_when: true
+  notify: Win_pwd_hist_size_verify_password_history
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      Password history size is already set to {{ win_pwd_hist_size_current_password_history.stdout }},
+      which meets or exceeds the required value of {{ win_pwd_hist_size_password_history_size }}
+  when: win_pwd_hist_size_current_password_history.stdout | int >= win_pwd_hist_size_password_history_size | int

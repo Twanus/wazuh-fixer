@@ -1,0 +1,6 @@
+---
+# defaults file for win_firewall_domain_logging_successful_connections
+# CIS Benchmark 9.1.7 (check 26122) requires 'Windows Firewall: Domain: Logging: Log successful connections' to be set to 'Yes'
+# This value can be overridden in playbooks or inventory
+# Value 0 = No, 1 = Yes (CIS requirement)
+win_firewall_domain_logging_successful_connections_value: 1

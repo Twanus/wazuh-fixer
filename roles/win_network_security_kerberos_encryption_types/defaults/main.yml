@@ -1,0 +1,6 @@
+---
+# defaults file for win_network_security_kerberos_encryption_types
+# CIS Benchmark 2.3.11.4 (check 26053) requires 'Network security: Configure encryption types allowed for Kerberos' to be set to 'AES128_HMAC_SHA1, AES256_HMAC_SHA1, Future encryption types'
+# This value can be overridden in playbooks or inventory
+# Value 2147483644 or 2147483640 = AES128_HMAC_SHA1, AES256_HMAC_SHA1, Future encryption types (CIS requirement)
+win_network_security_kerberos_encryption_types_value: 2147483644

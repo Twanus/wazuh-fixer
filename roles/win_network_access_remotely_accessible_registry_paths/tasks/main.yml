@@ -1,0 +1,51 @@
+---
+# tasks file for win_network_access_remotely_accessible_registry_paths
+- name: Check current AllowedExactPaths Machine setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\System\CurrentControlSet\Control\SecurePipeServers\Winreg\AllowedExactPaths"
+    $regName = "Machine"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "NOT_SET"
+    } else {
+      if ($value -is [System.Array]) {
+        $result = ($value | Sort-Object) -join "|"
+      } else {
+        $result = $value.ToString()
+      }
+      Write-Output $result
+    }
+  register: win_network_access_remotely_accessible_registry_paths_current_setting
+  changed_when: false
+
+- name: Display current AllowedExactPaths Machine setting
+  ansible.builtin.debug:
+    msg: >
+      Current AllowedExactPaths Machine: {{ win_network_access_remotely_accessible_registry_paths_current_setting.stdout | trim }}
+      (NOT_SET or configured paths - paths that can be accessed remotely)
+
+- name: Build expected paths string for comparison
+  ansible.builtin.set_fact:
+    win_network_access_remotely_accessible_registry_paths_expected: "{{ win_network_access_remotely_accessible_registry_paths_allowed_paths | sort | join('|') }}"
+  changed_when: false
+
+- name: Set AllowedExactPaths Machine to required value
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Control\SecurePipeServers\Winreg\AllowedExactPaths
+    name: Machine
+    data: "{{ win_network_access_remotely_accessible_registry_paths_allowed_paths }}"
+    type: multistring
+  register: win_network_access_remotely_accessible_registry_paths_apply_setting
+  when: >
+    win_network_access_remotely_accessible_registry_paths_current_setting.stdout | trim != win_network_access_remotely_accessible_registry_paths_expected and
+    win_network_access_remotely_accessible_registry_paths_current_setting.stdout | trim != "NOT_SET"
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      AllowedExactPaths Machine is already configured correctly,
+      which meets the requirement (configured with recommended registry paths)
+  when: >
+    win_network_access_remotely_accessible_registry_paths_current_setting.stdout | trim == win_network_access_remotely_accessible_registry_paths_expected or
+    win_network_access_remotely_accessible_registry_paths_current_setting.stdout | trim == "NOT_SET"

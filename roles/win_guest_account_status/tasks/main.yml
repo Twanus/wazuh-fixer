@@ -1,0 +1,48 @@
+---
+# tasks file for win_guest_account_status
+- name: Check current Guest account status
+  ansible.windows.win_shell: |
+    $guest = Get-CimInstance -Query "SELECT * FROM Win32_UserAccount WHERE LocalAccount = TRUE AND SID LIKE 'S-1-5-21-%-501'" -ErrorAction SilentlyContinue
+    if ($guest) {
+      if ($guest.Disabled) {
+        Write-Output "Disabled"
+      } else {
+        Write-Output "Enabled"
+      }
+    } else {
+      Write-Output "NotFound"
+    }
+  register: win_guest_account_status_current_status
+  changed_when: false
+
+- name: Display current Guest account status
+  ansible.builtin.debug:
+    msg: "Current Guest account status: {{ win_guest_account_status_current_status.stdout | trim }}"
+
+- name: Disable Guest account
+  ansible.windows.win_shell: |
+    $guest = Get-CimInstance -Query "SELECT * FROM Win32_UserAccount WHERE LocalAccount = TRUE AND SID LIKE 'S-1-5-21-%-501'" -ErrorAction SilentlyContinue
+    if ($guest -and -not $guest.Disabled) {
+      try {
+        Disable-LocalUser -Name $guest.Name -ErrorAction Stop
+        Write-Output "Guest account disabled successfully"
+      } catch {
+        Write-Error "Failed to disable Guest account: $_"
+        exit 1
+      }
+    } else {
+      Write-Output "Guest account is already disabled or not found"
+    }
+  register: win_guest_account_status_disable_account
+  when: >
+    (win_guest_account_status_current_status.stdout | trim) == "Enabled"
+  changed_when: true
+  notify: Win_guest_account_status_verify_status
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      Guest account is already disabled (or not found),
+      which meets the CIS requirement (Disabled)
+  when: >
+    (win_guest_account_status_current_status.stdout | trim) != "Enabled"

@@ -1,0 +1,6 @@
+---
+# defaults file for win_network_security_restrict_ntlm_audit_outgoing
+# CIS Benchmark 2.3.11.12 (check 26061) requires 'Network security: Restrict NTLM: Outgoing NTLM traffic to remote servers' to be set to 'Audit all' or higher
+# This value can be overridden in playbooks or inventory
+# Value 1 = Audit all (recommended), Value 2 = Deny all (more secure but may impact applications)
+win_network_security_restrict_ntlm_audit_outgoing_value: 1

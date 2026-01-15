@@ -1,0 +1,6 @@
+---
+# defaults file for win_system_objects_strengthen_default_permissions
+# CIS Benchmark 2.3.15.2 (check 26063) requires 'System objects: Strengthen default permissions of internal system objects (e.g. Symbolic Links)' to be set to 'Enabled'
+# This value can be overridden in playbooks or inventory
+# Value 1 = Enabled (CIS requirement)
+win_system_objects_strengthen_default_permissions_protection_mode_value: 1

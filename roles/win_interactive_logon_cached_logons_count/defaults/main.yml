@@ -1,0 +1,7 @@
+---
+# defaults file for win_interactive_logon_cached_logons_count
+# CIS Benchmark 2.3.7.7 (check 26028) requires 'Interactive logon: Number of previous logons to cache (in case domain controller is not available)' to be set to '4 or fewer logon(s)'
+# This value can be overridden in playbooks or inventory
+# Value must be between 0 and 4 (CIS requirement: 4 or fewer)
+# Default value is 4 (maximum allowed per CIS, balances usability with security)
+win_interactive_logon_cached_logons_count_cached_logons_count: 4

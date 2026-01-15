@@ -1,0 +1,22 @@
+---
+galaxy_info:
+  author: Antoon Vereecken
+  description: "Remediate CIS Benchmark 2.3.4.1 (check 26015) - Ensure 'Devices: Prevent users from installing printer drivers' is set to 'Enabled'"
+  license: GPL-2.0-or-later
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - all
+  galaxy_tags:
+    - security
+    - wazuh
+    - hardening
+    - cis
+    - windows
+    - devices
+    - printers
+    - compliance
+    - remediation
+
+dependencies: []

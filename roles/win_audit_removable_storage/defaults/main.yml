@@ -1,0 +1,5 @@
+---
+# defaults file for win_audit_removable_storage
+# CIS Benchmark 17.6.4 (check 26154) requires 'Audit Removable Storage' to be set to 'Success and Failure'
+# This role uses auditpol.exe to configure the audit policy subcategory
+# The required setting is "Success and Failure" which enables both success and failure auditing

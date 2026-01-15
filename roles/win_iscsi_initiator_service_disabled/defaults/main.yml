@@ -1,0 +1,7 @@
+---
+# defaults file for win_iscsi_initiator_service_disabled
+# CIS Benchmark 5.11 (check 26082) requires 'Microsoft iSCSI Initiator Service (MSiSCSI)' to be set to 'Disabled'
+# This value can be overridden in playbooks or inventory
+# Service Start values: 0=Boot, 1=System, 2=Auto, 3=Manual, 4=Disabled
+# Value 4 = Disabled (CIS requirement - Microsoft iSCSI Initiator Service is disabled)
+win_iscsi_initiator_service_disabled_start_value: 4

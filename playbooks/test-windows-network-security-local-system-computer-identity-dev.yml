@@ -1,0 +1,14 @@
+---
+# Test playbook for win_network_security_local_system_computer_identity role (Development)
+# Usage: ansible-playbook -i ../inventory.ini playbooks/test-windows-network-security-local-system-computer-identity-dev.yml
+
+- name: Test Windows Network Security Local System Computer Identity Role (Development)
+  hosts: windows
+  gather_facts: true
+  become: false
+  roles:
+    - role: ../roles/win_network_security_local_system_computer_identity  # noqa role-name[path]
+  post_tasks:
+    - name: Verify role completed successfully
+      ansible.builtin.debug:
+        msg: "Role execution completed. Check the output above for UseMachineId configuration."

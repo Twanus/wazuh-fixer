@@ -1,0 +1,22 @@
+---
+galaxy_info:
+  author: Antoon Vereecken
+  description: "Remediate CIS Benchmark 2.3.7.6 (check 26027) - Configure 'Interactive logon: Message title for users attempting to log on'"
+  license: GPL-2.0-or-later
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - all
+  galaxy_tags:
+    - security
+    - wazuh
+    - hardening
+    - cis
+    - windows
+    - interactive_logon
+    - message
+    - compliance
+    - remediation
+
+dependencies: []

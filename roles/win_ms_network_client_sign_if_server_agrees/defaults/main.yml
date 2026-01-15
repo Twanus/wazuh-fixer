@@ -1,0 +1,5 @@
+---
+# defaults file for win_ms_network_client_sign_if_server_agrees
+# CIS Benchmark 2.3.8.2 (check 26032) requires 'Microsoft network client: Digitally sign communications (if server agrees)' to be set to 'Enabled'
+# This value can be overridden in playbooks or inventory
+win_ms_network_client_sign_if_server_agrees_enabled_value: 1

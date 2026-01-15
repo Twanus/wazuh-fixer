@@ -1,0 +1,23 @@
+---
+galaxy_info:
+  author: Antoon Vereecken
+  description: "Remediate CIS Benchmark 2.3.6.6 (check 26021) - Ensure 'Domain member: Require strong (Windows 2000 or later) session key' is set to 'Enabled'"
+  license: GPL-2.0-or-later
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - all
+  galaxy_tags:
+    - security
+    - wazuh
+    - hardening
+    - cis
+    - windows
+    - domain
+    - encryption
+    - session_key
+    - compliance
+    - remediation
+
+dependencies: []

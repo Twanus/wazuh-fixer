@@ -1,0 +1,22 @@
+---
+galaxy_info:
+  author: Antoon Vereecken
+  description: "Remediate CIS Benchmark 17.7.3 (check 26157) - Ensure 'Audit Authorization Policy Change' is set to include 'Success'"
+  license: GPL-2.0-or-later
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - all
+  galaxy_tags:
+    - security
+    - wazuh
+    - hardening
+    - cis
+    - windows
+    - audit
+    - compliance
+    - remediation
+    - authorization-policy-change
+
+dependencies: []

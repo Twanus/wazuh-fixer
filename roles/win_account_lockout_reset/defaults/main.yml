@@ -1,0 +1,5 @@
+---
+# defaults file for win_account_lockout_reset
+# CIS Benchmark 1.2.4 (check 26007) requires reset account lockout counter after to be 15 or more minutes
+# This value can be overridden in playbooks or inventory
+win_account_lockout_reset_reset_lockout_count: 15

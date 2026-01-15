@@ -1,0 +1,25 @@
+---
+# meta file for win_audit_account_lockout
+galaxy_info:
+  author: twanus
+  description: Ensures 'Audit Account Lockout' is set to include 'Failure' (CIS Benchmark 17.5.1, Wazuh check 26145)
+  company: twanus
+  license: MIT
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - all
+  galaxy_tags:
+    - windows
+    - security
+    - hardening
+    - audit
+    - account_lockout
+    - wazuh
+    - cis
+    - compliance
+    - audit_policy
+    - logon_logoff
+
+dependencies: []

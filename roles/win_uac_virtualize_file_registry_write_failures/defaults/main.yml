@@ -1,0 +1,6 @@
+---
+# defaults file for win_uac_virtualize_file_registry_write_failures
+# CIS Benchmark 2.3.17.8 (check 26071) requires 'User Account Control: Virtualize file and registry write failures to per-user locations' to be set to 'Enabled'
+# This value can be overridden in playbooks or inventory
+# Value 1 = Enabled - application write failures redirected to per-user locations (CIS requirement)
+win_uac_virtualize_file_registry_write_failures_enable_virtualization: 1

@@ -1,0 +1,5 @@
+---
+# defaults file for win_audit_authentication_policy_change
+# CIS Benchmark 17.7.2 (check 26156) requires 'Audit Authentication Policy Change' to include 'Success'
+# This role uses auditpol.exe to configure the audit policy subcategory
+# The required setting must include "Success" (can be "Success" or "Success and Failure")

@@ -1,0 +1,7 @@
+---
+# defaults file for win_wecsvc_disabled
+# CIS Benchmark 5.34 (check 26105) requires 'Windows Event Collector (Wecsvc)' to be set to 'Disabled'
+# This value can be overridden in playbooks or inventory
+# Service Start values: 0=Boot, 1=System, 2=Auto, 3=Manual, 4=Disabled
+# Value 4 = Disabled (CIS requirement - Windows Event Collector is disabled)
+win_wecsvc_disabled_start_value: 4

@@ -1,0 +1,5 @@
+---
+# defaults file for win_network_security_allow_localsystem_null_session_fallback
+# CIS Benchmark 2.3.11.2 (check 26051) requires 'Network security: Allow LocalSystem NULL session fallback' to be set to 'Disabled'
+# This value can be overridden in playbooks or inventory
+win_network_security_allow_localsystem_null_session_fallback_disabled_value: 0

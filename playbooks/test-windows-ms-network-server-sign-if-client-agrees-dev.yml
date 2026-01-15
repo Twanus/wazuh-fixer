@@ -1,0 +1,14 @@
+---
+# Test playbook for win_ms_network_server_sign_if_client_agrees role (Development)
+# Usage: ansible-playbook -i ../inventory.ini playbooks/test-windows-ms-network-server-sign-if-client-agrees-dev.yml
+
+- name: Test Windows Microsoft Network Server Sign If Client Agrees Role (Development)
+  hosts: windows
+  gather_facts: true
+  become: false
+  roles:
+    - role: ../roles/win_ms_network_server_sign_if_client_agrees  # noqa role-name[path]
+  post_tasks:
+    - name: Verify role completed successfully
+      ansible.builtin.debug:
+        msg: "Role execution completed. Check the output above for EnableSecuritySignature configuration."

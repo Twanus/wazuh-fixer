@@ -1,0 +1,5 @@
+---
+# defaults file for win_network_access_restrict_anonymous_access_named_pipes_shares
+# CIS Benchmark 2.3.10.9 (check 26046) requires 'Network access: Restrict anonymous access to Named Pipes and Shares' to be set to 'Enabled'
+# This value can be overridden in playbooks or inventory
+win_network_access_restrict_anonymous_access_named_pipes_shares_enabled_value: 1

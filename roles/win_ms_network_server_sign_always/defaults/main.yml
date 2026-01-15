@@ -1,0 +1,5 @@
+---
+# defaults file for win_ms_network_server_sign_always
+# CIS Benchmark 2.3.9.2 (check 26035) requires 'Microsoft network server: Digitally sign communications (always)' to be set to 'Enabled'
+# This value can be overridden in playbooks or inventory
+win_ms_network_server_sign_always_enabled_value: 1

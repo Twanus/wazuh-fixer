@@ -1,0 +1,25 @@
+---
+# metadata file for win_firewall_public_logging_size_limit
+galaxy_info:
+  author: Antoon Vereecken
+  description: >
+    Remediates CIS Benchmark 9.3.7 (Wazuh check 26136): Ensure 'Windows Firewall: Public: Logging: Size limit (KB)' is set to '16,384 KB or greater'.
+    Configures the Windows Firewall Public Profile logging file size limit to meet CIS requirements.
+  license: GPL-2.0-or-later
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - all
+  galaxy_tags:
+    - security
+    - wazuh
+    - hardening
+    - cis
+    - windows
+    - firewall
+    - logging
+    - public_profile
+    - compliance
+
+dependencies: []

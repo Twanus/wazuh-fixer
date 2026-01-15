@@ -1,0 +1,14 @@
+---
+# Test playbook for win_audit_other_object_access_events role (Development)
+# Usage: ansible-playbook -i inventory.ini playbooks/test-windows-audit-other-object-access-events-dev.yml
+
+- name: Test Windows Audit Other Object Access Events Role (Development)
+  hosts: windows
+  gather_facts: true
+  become: false
+  roles:
+    - role: ../roles/win_audit_other_object_access_events  # noqa role-name[path]
+  post_tasks:
+    - name: Verify role completed successfully
+      ansible.builtin.debug:
+        msg: "Role execution completed. Check the output above for Other Object Access Events audit policy configuration."

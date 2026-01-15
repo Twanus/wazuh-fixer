@@ -1,0 +1,24 @@
+---
+galaxy_info:
+  author: Antoon Vereecken
+  description: "Remediate CIS Benchmark 2.3.10.5 (check 26042) - Ensure 'Network access: Let Everyone permissions apply to anonymous users' is set to 'Disabled'"
+  license: GPL-2.0-or-later
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - all
+  galaxy_tags:
+    - security
+    - wazuh
+    - hardening
+    - cis
+    - windows
+    - network_access
+    - anonymous
+    - everyone
+    - permissions
+    - compliance
+    - remediation
+
+dependencies: []

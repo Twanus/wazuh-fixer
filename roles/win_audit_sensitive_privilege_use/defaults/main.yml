@@ -1,0 +1,5 @@
+---
+# defaults file for win_audit_sensitive_privilege_use
+# CIS Benchmark 17.8.1 (check 26160) requires 'Audit Sensitive Privilege Use' to be set to 'Success and Failure'
+# This role uses auditpol.exe to configure the audit policy subcategory
+# The required setting is "Success and Failure" which enables both success and failure auditing

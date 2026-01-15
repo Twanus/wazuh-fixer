@@ -1,0 +1,41 @@
+---
+# tasks file for win_uac_consent_prompt_behavior_admin
+- name: Check current ConsentPromptBehaviorAdmin setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System"
+    $regName = "ConsentPromptBehaviorAdmin"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "NOT_SET"
+    } else {
+      Write-Output $value
+    }
+  register: win_uac_consent_prompt_behavior_admin_current_setting
+  changed_when: false
+
+- name: Display current ConsentPromptBehaviorAdmin setting
+  ansible.builtin.debug:
+    msg: >
+      Current ConsentPromptBehaviorAdmin: {{ win_uac_consent_prompt_behavior_admin_current_setting.stdout | trim }}
+      (0=Elevate without prompting, 1=Prompt for credentials on the secure desktop, 2=Prompt for consent on the secure desktop [recommended], 3=Prompt for credentials, 4=Prompt for consent, 5=Prompt for consent for non-Windows binaries)
+
+- name: Set ConsentPromptBehaviorAdmin to Prompt for consent on the secure desktop
+  ansible.windows.win_regedit:
+    path: HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System
+    name: ConsentPromptBehaviorAdmin
+    data: "{{ win_uac_consent_prompt_behavior_admin_consent_prompt_behavior_admin }}"
+    type: dword
+  register: win_uac_consent_prompt_behavior_admin_apply_setting
+  when: >
+    (win_uac_consent_prompt_behavior_admin_current_setting.stdout | trim) == "NOT_SET" or
+    (win_uac_consent_prompt_behavior_admin_current_setting.stdout | trim | int) != (win_uac_consent_prompt_behavior_admin_consent_prompt_behavior_admin | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      ConsentPromptBehaviorAdmin is already set to {{ win_uac_consent_prompt_behavior_admin_current_setting.stdout | trim }},
+      which meets the requirement (2 = Prompt for consent on the secure desktop)
+  when: >
+    (win_uac_consent_prompt_behavior_admin_current_setting.stdout | trim) != "NOT_SET" and
+    (win_uac_consent_prompt_behavior_admin_current_setting.stdout | trim | int) == (win_uac_consent_prompt_behavior_admin_consent_prompt_behavior_admin | int)

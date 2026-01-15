@@ -1,0 +1,6 @@
+---
+# defaults file for win_firewall_private_logging_successful_connections
+# CIS Benchmark 9.2.7 (check 26129) requires 'Windows Firewall: Private: Logging: Log successful connections' to be set to 'Yes'
+# This value can be overridden in playbooks or inventory
+# Value 0 = No, 1 = Yes (CIS requirement)
+win_firewall_private_logging_successful_connections_value: 1

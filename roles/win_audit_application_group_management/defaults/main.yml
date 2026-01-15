@@ -1,0 +1,6 @@
+---
+# defaults file for win_audit_application_group_management
+# CIS Benchmark 17.2.1 (check 26140) requires 'Audit Application Group Management' to be set to 'Success and Failure'
+# This role uses auditpol.exe to configure the Advanced Audit Policy subcategory
+# The setting is configured via auditpol.exe /set /subcategory:"Application Group Management" /success:enable /failure:enable
+# No variables are needed as the setting is hardcoded to the CIS requirement

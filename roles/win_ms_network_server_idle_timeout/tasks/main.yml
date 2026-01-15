@@ -1,0 +1,43 @@
+---
+# tasks file for win_ms_network_server_idle_timeout
+- name: Check current AutoDisconnect setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\System\CurrentControlSet\Services\LanManServer\Parameters"
+    $regName = "AutoDisconnect"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "0"
+    } else {
+      Write-Output $value
+    }
+  register: win_ms_network_server_idle_timeout_current_setting
+  changed_when: false
+
+- name: Display current AutoDisconnect setting
+  ansible.builtin.debug:
+    msg: >
+      Current AutoDisconnect: {{ win_ms_network_server_idle_timeout_current_setting.stdout | trim }} minute(s)
+      (0=Not set - session suspension disabled, 1-15=Configured - SMB session suspended after specified minutes of inactivity [recommended])
+
+- name: Set AutoDisconnect to required value
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Services\LanManServer\Parameters
+    name: AutoDisconnect
+    data: "{{ win_ms_network_server_idle_timeout_idle_timeout_minutes }}"
+    type: dword
+  register: win_ms_network_server_idle_timeout_apply_setting
+  when: >
+    (win_ms_network_server_idle_timeout_current_setting.stdout | trim | int) == 0 or
+    (win_ms_network_server_idle_timeout_current_setting.stdout | trim | int) > 15 or
+    (win_ms_network_server_idle_timeout_current_setting.stdout | trim | int) != (win_ms_network_server_idle_timeout_idle_timeout_minutes | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      AutoDisconnect is already set to {{ win_ms_network_server_idle_timeout_current_setting.stdout | trim }} minute(s),
+      which meets the requirement (15 or fewer minute(s))
+  when: >
+    (win_ms_network_server_idle_timeout_current_setting.stdout | trim | int) != 0 and
+    (win_ms_network_server_idle_timeout_current_setting.stdout | trim | int) <= 15 and
+    (win_ms_network_server_idle_timeout_current_setting.stdout | trim | int) == (win_ms_network_server_idle_timeout_idle_timeout_minutes | int)

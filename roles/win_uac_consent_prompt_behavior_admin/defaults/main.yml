@@ -1,0 +1,6 @@
+---
+# defaults file for win_uac_consent_prompt_behavior_admin
+# CIS Benchmark 2.3.17.2 (check 26065) requires 'User Account Control: Behavior of the elevation prompt for administrators in Admin Approval Mode' to be set to 'Prompt for consent on the secure desktop'
+# This value can be overridden in playbooks or inventory
+# Value 2 = Prompt for consent on the secure desktop (CIS requirement)
+win_uac_consent_prompt_behavior_admin_consent_prompt_behavior_admin: 2

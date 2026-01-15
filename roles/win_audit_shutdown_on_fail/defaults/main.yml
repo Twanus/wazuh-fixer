@@ -1,0 +1,6 @@
+---
+# defaults file for win_audit_shutdown_on_fail
+# CIS Benchmark 2.3.2.2 (check 26014) requires 'Audit: Shut down system immediately if unable to log security audits' to be set to 'Disabled'
+# This value can be overridden in playbooks or inventory
+# Value 0 = Disabled (CIS requirement)
+win_audit_shutdown_on_fail_disabled_value: 0

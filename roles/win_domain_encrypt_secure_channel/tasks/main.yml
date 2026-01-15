@@ -1,0 +1,39 @@
+---
+# tasks file for win_domain_encrypt_secure_channel
+- name: Check current RequireSignOrSeal setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\System\CurrentControlSet\Services\Netlogon\Parameters"
+    $regName = "RequireSignOrSeal"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "0"
+    } else {
+      Write-Output $value
+    }
+  register: win_domain_encrypt_secure_channel_current_setting
+  changed_when: false
+
+- name: Display current RequireSignOrSeal setting
+  ansible.builtin.debug:
+    msg: >
+      Current RequireSignOrSeal: {{ win_domain_encrypt_secure_channel_current_setting.stdout | trim }}
+      (0=Disabled/Not Set - secure channel data may not be encrypted or signed, 1=Enabled - all secure channel data must be signed or encrypted)
+
+- name: Set RequireSignOrSeal to Enabled
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Services\Netlogon\Parameters
+    name: RequireSignOrSeal
+    data: "{{ win_domain_encrypt_secure_channel_enabled_value }}"
+    type: dword
+  register: win_domain_encrypt_secure_channel_apply_setting
+  when: >
+    (win_domain_encrypt_secure_channel_current_setting.stdout | trim | int) != (win_domain_encrypt_secure_channel_enabled_value | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      RequireSignOrSeal is already set to {{ win_domain_encrypt_secure_channel_current_setting.stdout | trim }},
+      which meets the requirement (1 = Enabled - all secure channel data must be signed or encrypted)
+  when: >
+    (win_domain_encrypt_secure_channel_current_setting.stdout | trim | int) == (win_domain_encrypt_secure_channel_enabled_value | int)

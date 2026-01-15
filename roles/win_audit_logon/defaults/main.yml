@@ -1,0 +1,5 @@
+---
+# defaults file for win_audit_logon
+# CIS Benchmark 17.5.4 (check 26148) requires 'Audit Logon' to be set to 'Success and Failure'
+# This role uses auditpol.exe to configure the audit policy subcategory
+# The required setting is "Success and Failure" which enables both success and failure auditing

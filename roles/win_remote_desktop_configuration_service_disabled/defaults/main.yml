@@ -1,0 +1,7 @@
+---
+# defaults file for win_remote_desktop_configuration_service_disabled
+# CIS Benchmark 5.20 (check 26091) requires 'Remote Desktop Configuration (SessionEnv)' to be set to 'Disabled'
+# This value can be overridden in playbooks or inventory
+# Service Start values: 0=Boot, 1=System, 2=Auto, 3=Manual, 4=Disabled
+# Value 4 = Disabled (CIS requirement - Remote Desktop Configuration service is disabled)
+win_remote_desktop_configuration_service_disabled_start_value: 4

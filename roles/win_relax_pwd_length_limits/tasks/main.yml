@@ -1,0 +1,31 @@
+---
+# tasks file for win_relax_pwd_length_limits
+- name: Check current RelaxMinimumPasswordLengthLimits setting
+  ansible.windows.win_reg_stat:
+    path: HKLM:\System\CurrentControlSet\Control\SAM
+    name: RelaxMinimumPasswordLengthLimits
+  register: win_relax_pwd_length_limits_current_setting
+  changed_when: false
+
+- name: Display current RelaxMinimumPasswordLengthLimits setting
+  ansible.builtin.debug:
+    msg: "Current RelaxMinimumPasswordLengthLimits: {{ win_relax_pwd_length_limits_current_setting.value | default('Not set') }} (1=Enabled, 0=Disabled)"
+
+- name: Set RelaxMinimumPasswordLengthLimits to enabled
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Control\SAM
+    name: RelaxMinimumPasswordLengthLimits
+    data: "{{ 1 if win_relax_pwd_length_limits_enabled else 0 }}"
+    type: dword
+  register: win_relax_pwd_length_limits_apply_setting
+  when: >
+    (win_relax_pwd_length_limits_current_setting.value | default(0) | int) != (1 if win_relax_pwd_length_limits_enabled else 0)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      RelaxMinimumPasswordLengthLimits is already set to {{ win_relax_pwd_length_limits_current_setting.value | default('Not set') }},
+      which meets the requirement (Enabled = 1)
+  when: >
+    (win_relax_pwd_length_limits_current_setting.value | default(0) | int) == 1

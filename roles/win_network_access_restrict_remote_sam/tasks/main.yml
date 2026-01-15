@@ -1,0 +1,46 @@
+---
+# tasks file for win_network_access_restrict_remote_sam
+- name: Check current RestrictRemoteSAM setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa"
+    $regName = "RestrictRemoteSAM"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value -or $value -eq "") {
+      Write-Output ""
+    } else {
+      Write-Output $value
+    }
+  register: win_network_access_restrict_remote_sam_current_setting
+  changed_when: false
+
+- name: Display current RestrictRemoteSAM setting
+  ansible.builtin.debug:
+    msg:
+      - >
+        Current RestrictRemoteSAM: {{
+          (win_network_access_restrict_remote_sam_current_setting.stdout | trim)
+          if (win_network_access_restrict_remote_sam_current_setting.stdout | trim) != '' else '(Not set)'
+        }}
+      - >
+        (Not set = not configured,
+        O:BAG:BAD:(A;;RC;;;BA) = Administrators: Remote Access: Allow [recommended])
+- name: 'Set RestrictRemoteSAM to Administrators: Remote Access: Allow'
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Control\Lsa
+    name: RestrictRemoteSAM
+    data: "{{ win_network_access_restrict_remote_sam_sddl_value }}"
+    type: string
+  register: win_network_access_restrict_remote_sam_apply_setting
+  when: >
+    (win_network_access_restrict_remote_sam_current_setting.stdout | trim == "") or
+    (win_network_access_restrict_remote_sam_current_setting.stdout | trim != win_network_access_restrict_remote_sam_sddl_value)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      RestrictRemoteSAM is already set to "{{ win_network_access_restrict_remote_sam_current_setting.stdout | trim }}",
+      which meets the requirement (O:BAG:BAD:(A;;RC;;;BA) = Administrators: Remote Access: Allow)
+  when: >
+    (win_network_access_restrict_remote_sam_current_setting.stdout | trim != "") and
+    (win_network_access_restrict_remote_sam_current_setting.stdout | trim == win_network_access_restrict_remote_sam_sddl_value)

@@ -1,0 +1,15 @@
+---
+# Development test playbook - uses role directly from roles/ directory
+# Usage: ansible-playbook -i inventory.ini playbooks/test-windows-uac-apply-restrictions-local-accounts-network-logons-dev.yml
+
+- name: Test Windows UAC Apply Restrictions to Local Accounts on Network Logons Role (Development)
+  hosts: windows
+  gather_facts: true
+  become: false
+  roles:
+    # Use relative path for development/testing without installing collection
+    - role: ../roles/win_uac_apply_restrictions_local_accounts_network_logons  # noqa role-name[path]
+  post_tasks:
+    - name: Verify role completed successfully
+      ansible.builtin.debug:
+        msg: "Role execution completed. Check the output above for LocalAccountTokenFilterPolicy configuration."

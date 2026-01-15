@@ -1,0 +1,6 @@
+---
+# defaults file for win_firewall_public_disable_notifications
+# CIS Benchmark 9.3.3 (check 26132) requires 'Windows Firewall: Public: Settings: Display a notification' to be set to 'No'
+# This value can be overridden in playbooks or inventory
+# Value 0 = Yes (display notifications), 1 = No (disable notifications, CIS requirement)
+win_firewall_public_disable_notifications_disable_notifications: 1

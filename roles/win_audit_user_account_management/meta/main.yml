@@ -1,0 +1,22 @@
+---
+galaxy_info:
+  author: Antoon Vereecken
+  description: "Remediate CIS Benchmark 17.2.3 (check 26142) - Ensure 'Audit User Account Management' is set to 'Success and Failure'"
+  license: GPL-2.0-or-later
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - all
+  galaxy_tags:
+    - security
+    - wazuh
+    - hardening
+    - cis
+    - windows
+    - audit
+    - compliance
+    - remediation
+    - user-account-management
+
+dependencies: []

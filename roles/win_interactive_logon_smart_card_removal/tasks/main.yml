@@ -1,0 +1,40 @@
+---
+# tasks file for win_interactive_logon_smart_card_removal
+- name: Check current ScRemoveOption setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon"
+    $regName = "ScRemoveOption"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "0"
+    } else {
+      Write-Output $value
+    }
+  register: win_interactive_logon_smart_card_removal_current_setting
+  changed_when: false
+
+- name: Display current ScRemoveOption setting
+  ansible.builtin.debug:
+    msg: >
+      Current ScRemoveOption: {{ win_interactive_logon_smart_card_removal_current_setting.stdout | trim }}
+      (0=No action, 1=Lock Workstation [recommended], 2=Force Logoff, 3=Disconnect if Remote Desktop Services session)
+
+- name: Set ScRemoveOption to required value
+  ansible.windows.win_regedit:
+    path: HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon
+    name: ScRemoveOption
+    data: "{{ win_interactive_logon_smart_card_removal_sc_remove_option }}"
+    type: dword
+  register: win_interactive_logon_smart_card_removal_apply_setting
+  when: >
+    (win_interactive_logon_smart_card_removal_current_setting.stdout | trim | int) != (win_interactive_logon_smart_card_removal_sc_remove_option | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      ScRemoveOption is already set to {{ win_interactive_logon_smart_card_removal_current_setting.stdout | trim }}
+      ({{ 'Lock Workstation' if win_interactive_logon_smart_card_removal_current_setting.stdout | trim | int == 1 else ('Force Logoff' if win_interactive_logon_smart_card_removal_current_setting.stdout | trim | int == 2 else ('Disconnect if Remote Desktop Services session' if win_interactive_logon_smart_card_removal_current_setting.stdout | trim | int == 3 else 'Unknown')) }}),
+      which meets the requirement (Lock Workstation, Force Logoff, or Disconnect if Remote Desktop Services session)
+  when: >
+    (win_interactive_logon_smart_card_removal_current_setting.stdout | trim | int) == (win_interactive_logon_smart_card_removal_sc_remove_option | int)

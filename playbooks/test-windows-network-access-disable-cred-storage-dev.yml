@@ -1,0 +1,14 @@
+---
+# Test playbook for win_network_access_disable_cred_storage role (Development)
+# Usage: ansible-playbook -i ../inventory.ini playbooks/test-windows-network-access-disable-cred-storage-dev.yml
+
+- name: Test Windows Network Access Disable Credential Storage Role (Development)
+  hosts: windows
+  gather_facts: true
+  become: false
+  roles:
+    - role: ../roles/win_network_access_disable_cred_storage  # noqa role-name[path]
+  post_tasks:
+    - name: Verify role completed successfully
+      ansible.builtin.debug:
+        msg: "Role execution completed. Check the output above for DisableDomainCreds configuration. Note: Changes will not take effect until Windows is restarted."

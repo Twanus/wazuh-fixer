@@ -1,0 +1,39 @@
+---
+# tasks file for win_network_security_local_system_computer_identity
+- name: Check current UseMachineId setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa"
+    $regName = "UseMachineId"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "0"
+    } else {
+      Write-Output $value
+    }
+  register: win_network_security_local_system_computer_identity_current_setting
+  changed_when: false
+
+- name: Display current UseMachineId setting
+  ansible.builtin.debug:
+    msg: >
+      Current UseMachineId: {{ win_network_security_local_system_computer_identity_current_setting.stdout | trim }}
+      (0=Disabled - Local System services use NULL session when reverting to NTLM, 1=Enabled - Local System services use computer identity when reverting to NTLM)
+
+- name: Set UseMachineId to Enabled
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Control\Lsa
+    name: UseMachineId
+    data: "{{ win_network_security_local_system_computer_identity_enabled_value }}"
+    type: dword
+  register: win_network_security_local_system_computer_identity_apply_setting
+  when: >
+    (win_network_security_local_system_computer_identity_current_setting.stdout | trim | int) != (win_network_security_local_system_computer_identity_enabled_value | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      UseMachineId is already set to {{ win_network_security_local_system_computer_identity_current_setting.stdout | trim }},
+      which meets the requirement (1 = Enabled - Local System services use computer identity when reverting to NTLM)
+  when: >
+    (win_network_security_local_system_computer_identity_current_setting.stdout | trim | int) == (win_network_security_local_system_computer_identity_enabled_value | int)

@@ -1,0 +1,68 @@
+---
+# tasks file for win_smb_v1_client_driver_disabled
+- name: Check if SMB v1 client driver service registry key exists and get Start setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\SYSTEM\CurrentControlSet\Services\mrxsmb10"
+    $regName = "Start"
+    if (Test-Path -Path $regPath) {
+      $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+      if ($null -eq $value) {
+        Write-Output "NOT_SET"
+      } else {
+        Write-Output $value
+      }
+    } else {
+      Write-Output "KEY_NOT_EXISTS"
+    }
+  register: win_smb_v1_client_driver_disabled_current_setting
+  changed_when: false
+
+- name: Display current SMB v1 client driver service status
+  ansible.builtin.debug:
+    msg: >
+      Current SMB v1 client driver service: {{ win_smb_v1_client_driver_disabled_current_setting.stdout | trim }}
+      (KEY_NOT_EXISTS=Service driver not installed [compliant],
+      NOT_SET=Registry key exists but Start value not set,
+      0=Boot, 1=System, 2=Auto, 3=Manual, 4=Disabled [recommended])
+
+- name: Set SMB v1 client driver service Start to Disabled
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Services\mrxsmb10
+    name: Start
+    data: "{{ win_smb_v1_client_driver_disabled_start_value }}"
+    type: dword
+  register: win_smb_v1_client_driver_disabled_apply_setting
+  when: >
+    (win_smb_v1_client_driver_disabled_current_setting.stdout | trim) != "KEY_NOT_EXISTS" and
+    (win_smb_v1_client_driver_disabled_current_setting.stdout | trim) != "NOT_SET" and
+    (win_smb_v1_client_driver_disabled_current_setting.stdout | trim | int) != (win_smb_v1_client_driver_disabled_start_value | int)
+  changed_when: true
+
+- name: Set SMB v1 client driver service Start to Disabled (when NOT_SET)
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Services\mrxsmb10
+    name: Start
+    data: "{{ win_smb_v1_client_driver_disabled_start_value }}"
+    type: dword
+  register: win_smb_v1_client_driver_disabled_apply_setting_not_set
+  when: >
+    (win_smb_v1_client_driver_disabled_current_setting.stdout | trim) == "NOT_SET"
+  changed_when: true
+
+- name: Report if service driver is not installed
+  ansible.builtin.debug:
+    msg: >
+      SMB v1 client driver service is not installed (registry key does not exist).
+      This is compliant - SMB v1 should not be installed on modern Windows systems.
+  when: >
+    (win_smb_v1_client_driver_disabled_current_setting.stdout | trim) == "KEY_NOT_EXISTS"
+
+- name: Report if service driver is already disabled (compliant)
+  ansible.builtin.debug:
+    msg: >
+      SMB v1 client driver service Start is already set to {{ win_smb_v1_client_driver_disabled_current_setting.stdout | trim }},
+      which meets the requirement (4 = Disabled)
+  when: >
+    (win_smb_v1_client_driver_disabled_current_setting.stdout | trim) != "KEY_NOT_EXISTS" and
+    (win_smb_v1_client_driver_disabled_current_setting.stdout | trim) != "NOT_SET" and
+    (win_smb_v1_client_driver_disabled_current_setting.stdout | trim | int) == (win_smb_v1_client_driver_disabled_start_value | int)

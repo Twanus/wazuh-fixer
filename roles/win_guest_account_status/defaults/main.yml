@@ -1,0 +1,5 @@
+---
+# defaults file for win_guest_account_status
+# CIS Benchmark 2.3.1.2 (check 26009) requires 'Accounts: Guest account status' to be set to 'Disabled'
+# This variable is kept for consistency but the role always ensures the account is disabled
+win_guest_account_status_should_be_disabled: true

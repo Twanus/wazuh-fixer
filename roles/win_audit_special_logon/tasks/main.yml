@@ -1,0 +1,49 @@
+---
+# tasks file for win_audit_special_logon
+- name: Check current Special Logon audit policy setting
+  ansible.windows.win_shell: |
+    $output = auditpol.exe /get /subcategory:"Special Logon" 2>&1
+    if ($LASTEXITCODE -ne 0) {
+      Write-Error "Failed to get audit policy. Exit code: $LASTEXITCODE"
+      Write-Output $output
+      exit $LASTEXITCODE
+    }
+    Write-Output $output
+  register: win_audit_special_logon_current_setting
+  changed_when: false
+
+- name: Display current Special Logon audit policy setting
+  ansible.builtin.debug:
+    msg: >
+      Current Special Logon audit policy:
+      {{ win_audit_special_logon_current_setting.stdout_lines | join('\n') }}
+
+- name: Check if Special Logon includes Success auditing
+  ansible.builtin.set_fact:
+    win_audit_special_logon_success_enabled: >
+      {{ 'Success' in win_audit_special_logon_current_setting.stdout }}
+
+- name: Set Special Logon audit policy to include Success
+  ansible.windows.win_shell: |
+    $checkOutput = auditpol.exe /get /subcategory:"Special Logon" 2>&1
+    $failureEnabled = $checkOutput -match "Failure"
+    if ($failureEnabled) {
+      auditpol.exe /set /subcategory:"Special Logon" /success:enable /failure:enable
+    } else {
+      auditpol.exe /set /subcategory:"Special Logon" /success:enable /failure:disable
+    }
+    if ($LASTEXITCODE -ne 0) {
+      Write-Error "Failed to set audit policy. Exit code: $LASTEXITCODE"
+      exit $LASTEXITCODE
+    }
+    Write-Output "Successfully set Special Logon audit policy to include Success"
+  register: win_audit_special_logon_apply_setting
+  when: not win_audit_special_logon_success_enabled | bool
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      Special Logon audit policy already includes 'Success',
+      which meets the CIS Benchmark requirement (17.5.6)
+  when: win_audit_special_logon_success_enabled | bool

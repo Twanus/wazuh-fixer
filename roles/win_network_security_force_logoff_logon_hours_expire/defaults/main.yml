@@ -1,0 +1,5 @@
+---
+# defaults file for win_network_security_force_logoff_logon_hours_expire
+# CIS Benchmark 2.3.11.6 (check 26055) requires 'Network security: Force logoff when logon hours expire' to be set to 'Enabled'
+# This value can be overridden in playbooks or inventory
+win_network_security_force_logoff_logon_hours_expire_enabled_value: 1

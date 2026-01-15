@@ -1,0 +1,24 @@
+---
+galaxy_info:
+  author: Antoon Vereecken
+  description: "Remediate CIS Benchmark 2.3.11.6 (check 26055) - Ensure 'Network security: Force logoff when logon hours expire' is set to 'Enabled'"
+  license: GPL-2.0-or-later
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - all
+  galaxy_tags:
+    - security
+    - wazuh
+    - hardening
+    - cis
+    - windows
+    - network_security
+    - logon_hours
+    - logoff
+    - smb
+    - compliance
+    - remediation
+
+dependencies: []

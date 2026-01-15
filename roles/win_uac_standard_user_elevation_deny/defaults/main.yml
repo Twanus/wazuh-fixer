@@ -1,0 +1,7 @@
+---
+# defaults file for win_uac_standard_user_elevation_deny
+# CIS Benchmark 2.3.17.3 (check 26066) requires 'User Account Control: Behavior of the elevation prompt for standard users' to be set to 'Automatically deny elevation requests'
+# This value can be overridden in playbooks or inventory
+# Value 0 = Automatically deny elevation requests (CIS requirement)
+# Value 3 = Prompt for credentials on the secure desktop
+win_uac_standard_user_elevation_deny_consent_prompt_behavior_user: 0

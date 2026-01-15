@@ -1,0 +1,5 @@
+---
+# defaults file for win_relax_pwd_length_limits
+# CIS Benchmark 1.1.6 (check 26004) requires 'Relax minimum password length limits' to be Enabled
+# This value can be overridden in playbooks or inventory
+win_relax_pwd_length_limits_enabled: true

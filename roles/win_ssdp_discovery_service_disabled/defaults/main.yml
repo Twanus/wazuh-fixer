@@ -1,0 +1,7 @@
+---
+# defaults file for win_ssdp_discovery_service_disabled
+# CIS Benchmark 5.30 (check 26101) requires 'SSDP Discovery (SSDPSRV)' to be set to 'Disabled'
+# This value can be overridden in playbooks or inventory
+# Value 4 = Disabled (CIS requirement)
+# Windows service Start values: 0=Boot, 1=System, 2=Auto, 3=Manual, 4=Disabled
+win_ssdp_discovery_service_disabled_start_value: 4

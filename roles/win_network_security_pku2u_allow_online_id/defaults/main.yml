@@ -1,0 +1,5 @@
+---
+# defaults file for win_network_security_pku2u_allow_online_id
+# CIS Benchmark 2.3.11.3 (check 26052) requires 'Network Security: Allow PKU2U authentication requests to this computer to use online identities' to be set to 'Disabled'
+# This value can be overridden in playbooks or inventory
+win_network_security_pku2u_allow_online_id_disabled_value: 0

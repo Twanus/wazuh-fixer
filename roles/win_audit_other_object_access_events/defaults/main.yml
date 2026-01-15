@@ -1,0 +1,5 @@
+---
+# defaults file for win_audit_other_object_access_events
+# CIS Benchmark 17.6.3 (check 26153) requires 'Audit Other Object Access Events' to be set to 'Success and Failure'
+# This role uses auditpol.exe to configure the audit policy subcategory
+# The required setting is "Success and Failure" which enables both success and failure auditing

@@ -1,0 +1,39 @@
+---
+# tasks file for win_uac_apply_restrictions_local_accounts_network_logons
+- name: Check current LocalAccountTokenFilterPolicy setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System"
+    $regName = "LocalAccountTokenFilterPolicy"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "0"
+    } else {
+      Write-Output $value
+    }
+  register: win_uac_apply_restrictions_local_accounts_network_logons_current_setting
+  changed_when: false
+
+- name: Display current LocalAccountTokenFilterPolicy setting
+  ansible.builtin.debug:
+    msg: >
+      Current LocalAccountTokenFilterPolicy: {{ win_uac_apply_restrictions_local_accounts_network_logons_current_setting.stdout | trim }}
+      (0=Enabled - UAC restrictions applied to local accounts on network logons [recommended], 1=Disabled - Full administrative rights for local accounts on network logons)
+
+- name: Set LocalAccountTokenFilterPolicy to Enabled
+  ansible.windows.win_regedit:
+    path: HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System
+    name: LocalAccountTokenFilterPolicy
+    data: "{{ win_uac_apply_restrictions_local_accounts_network_logons_local_account_token_filter_policy }}"
+    type: dword
+  register: win_uac_apply_restrictions_local_accounts_network_logons_apply_setting
+  when: >
+    (win_uac_apply_restrictions_local_accounts_network_logons_current_setting.stdout | trim | int) != (win_uac_apply_restrictions_local_accounts_network_logons_local_account_token_filter_policy | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      LocalAccountTokenFilterPolicy is already set to {{ win_uac_apply_restrictions_local_accounts_network_logons_current_setting.stdout | trim }},
+      which meets the requirement (0 = Enabled - UAC restrictions applied to local accounts on network logons)
+  when: >
+    (win_uac_apply_restrictions_local_accounts_network_logons_current_setting.stdout | trim | int) == (win_uac_apply_restrictions_local_accounts_network_logons_local_account_token_filter_policy | int)

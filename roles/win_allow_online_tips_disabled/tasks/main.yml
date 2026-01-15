@@ -1,0 +1,48 @@
+---
+# tasks file for win_allow_online_tips_disabled
+- name: Check current AllowOnlineTips setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer"
+    $regName = "AllowOnlineTips"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "NOT_SET"
+    } else {
+      Write-Output $value
+    }
+  register: win_allow_online_tips_disabled_current_setting
+  changed_when: false
+
+- name: Display current AllowOnlineTips setting
+  ansible.builtin.debug:
+    msg: >
+      Current AllowOnlineTips: {{ win_allow_online_tips_disabled_current_setting.stdout | trim }}
+      (0=Disabled - online tips disabled [recommended], 1=Enabled - online tips enabled, NOT_SET=Not configured)
+
+- name: Ensure Explorer registry key exists
+  ansible.windows.win_regedit:
+    path: HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer
+    state: present
+  register: win_allow_online_tips_disabled_ensure_key
+  when: win_allow_online_tips_disabled_current_setting.stdout | trim == "NOT_SET"
+  changed_when: true
+
+- name: Set AllowOnlineTips to Disabled
+  ansible.windows.win_regedit:
+    path: HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer
+    name: AllowOnlineTips
+    data: "{{ win_allow_online_tips_disabled_value }}"
+    type: dword
+  register: win_allow_online_tips_disabled_apply_setting
+  when: >
+    (win_allow_online_tips_disabled_current_setting.stdout | trim == "NOT_SET") or
+    ((win_allow_online_tips_disabled_current_setting.stdout | trim | int) != (win_allow_online_tips_disabled_value | int))
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      AllowOnlineTips is already set to {{ win_allow_online_tips_disabled_current_setting.stdout | trim }},
+      which meets the requirement (0 = Disabled - online tips disabled)
+  when: >
+    (win_allow_online_tips_disabled_current_setting.stdout | trim | int) == (win_allow_online_tips_disabled_value | int)

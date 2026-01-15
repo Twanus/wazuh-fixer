@@ -1,0 +1,5 @@
+---
+# defaults file for win_network_security_no_lm_hash
+# CIS Benchmark 2.3.11.5 (check 26054) requires 'Network security: Do not store LAN Manager hash value on next password change' to be set to 'Enabled'
+# This value can be overridden in playbooks or inventory
+win_network_security_no_lm_hash_enabled_value: 1

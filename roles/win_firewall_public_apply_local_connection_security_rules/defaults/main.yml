@@ -1,0 +1,6 @@
+---
+# defaults file for win_firewall_public_apply_local_connection_security_rules
+# CIS Benchmark 9.3.5 (check 26134) requires 'Windows Firewall: Public: Settings: Apply local connection security rules' to be set to 'No'
+# This value can be overridden in playbooks or inventory
+# Value 0 = No (do not apply local connection security rules, CIS requirement), 1 = Yes (allow local connection security rules)
+win_firewall_public_apply_local_connection_security_rules_allow_local_ipsec_policy_merge: 0

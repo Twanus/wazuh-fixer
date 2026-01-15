@@ -1,0 +1,5 @@
+---
+# defaults file for win_audit_credential_validation
+# CIS Benchmark 17.1.1 (check 26139) requires 'Audit Credential Validation' to be set to 'Success and Failure'
+# This role uses auditpol.exe to configure the audit policy subcategory
+# The required setting is "Success and Failure" which enables both success and failure auditing

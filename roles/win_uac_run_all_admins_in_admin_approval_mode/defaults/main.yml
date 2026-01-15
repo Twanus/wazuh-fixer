@@ -1,0 +1,6 @@
+---
+# defaults file for win_uac_run_all_admins_in_admin_approval_mode
+# CIS Benchmark 2.3.17.6 (check 26069) requires 'User Account Control: Run all administrators in Admin Approval Mode' to be set to 'Enabled'
+# This value can be overridden in playbooks or inventory
+# Value 1 = Enabled - UAC is enabled and Admin Approval Mode is active for all administrators (CIS requirement)
+win_uac_run_all_admins_in_admin_approval_mode_enable_lua: 1

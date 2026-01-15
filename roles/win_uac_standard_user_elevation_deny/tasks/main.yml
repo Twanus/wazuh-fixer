@@ -1,0 +1,39 @@
+---
+# tasks file for win_uac_standard_user_elevation_deny
+- name: Check current ConsentPromptBehaviorUser setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System"
+    $regName = "ConsentPromptBehaviorUser"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "0"
+    } else {
+      Write-Output $value
+    }
+  register: win_uac_standard_user_elevation_deny_current_setting
+  changed_when: false
+
+- name: Display current ConsentPromptBehaviorUser setting
+  ansible.builtin.debug:
+    msg: >
+      Current ConsentPromptBehaviorUser: {{ win_uac_standard_user_elevation_deny_current_setting.stdout | trim }}
+      (0=Automatically deny elevation requests [recommended], 3=Prompt for credentials on the secure desktop)
+
+- name: Set ConsentPromptBehaviorUser to Automatically deny elevation requests
+  ansible.windows.win_regedit:
+    path: HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System
+    name: ConsentPromptBehaviorUser
+    data: "{{ win_uac_standard_user_elevation_deny_consent_prompt_behavior_user }}"
+    type: dword
+  register: win_uac_standard_user_elevation_deny_apply_setting
+  when: >
+    (win_uac_standard_user_elevation_deny_current_setting.stdout | trim | int) != (win_uac_standard_user_elevation_deny_consent_prompt_behavior_user | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      ConsentPromptBehaviorUser is already set to {{ win_uac_standard_user_elevation_deny_current_setting.stdout | trim }},
+      which meets the requirement (0 = Automatically deny elevation requests)
+  when: >
+    (win_uac_standard_user_elevation_deny_current_setting.stdout | trim | int) == (win_uac_standard_user_elevation_deny_consent_prompt_behavior_user | int)

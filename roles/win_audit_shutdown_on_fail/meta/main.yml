@@ -1,0 +1,21 @@
+---
+galaxy_info:
+  author: Antoon Vereecken
+  description: "Remediate CIS Benchmark 2.3.2.2 (check 26014) - Ensure 'Audit: Shut down system immediately if unable to log security audits' is set to 'Disabled'"
+  license: GPL-2.0-or-later
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - all
+  galaxy_tags:
+    - security
+    - wazuh
+    - hardening
+    - cis
+    - windows
+    - audit
+    - compliance
+    - remediation
+
+dependencies: []

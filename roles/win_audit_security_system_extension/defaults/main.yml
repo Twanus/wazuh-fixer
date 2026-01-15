@@ -1,0 +1,5 @@
+---
+# defaults file for win_audit_security_system_extension
+# CIS Benchmark 17.9.4 (check 26164) requires 'Audit Security System Extension' to include 'Success'
+# This role uses auditpol.exe to configure the audit policy subcategory
+# The required setting must include "Success" (can be "Success" or "Success and Failure")

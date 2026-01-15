@@ -1,0 +1,6 @@
+---
+# defaults file for win_uac_admin_approval_builtin_admin
+# CIS Benchmark 2.3.17.1 (check 26064) requires 'User Account Control: Admin Approval Mode for the Built-in Administrator account' to be set to 'Enabled'
+# This value can be overridden in playbooks or inventory
+# Value 1 = Enabled - Admin Approval Mode enabled for built-in Administrator (CIS requirement)
+win_uac_admin_approval_builtin_admin_filter_administrator_token: 1

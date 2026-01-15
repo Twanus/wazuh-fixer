@@ -1,0 +1,6 @@
+---
+# defaults file for win_uac_secure_desktop_prompt
+# CIS Benchmark 2.3.17.7 (check 26070) requires 'User Account Control: Switch to the secure desktop when prompting for elevation' to be set to 'Enabled'
+# This value can be overridden in playbooks or inventory
+# Value 1 = Enabled - Secure desktop elevation prompt (CIS requirement)
+win_uac_secure_desktop_prompt_prompt_on_secure_desktop: 1

@@ -1,0 +1,23 @@
+---
+galaxy_info:
+  author: Antoon Vereecken
+  description: "Remediate CIS Benchmark 2.3.10.2 (check 26039) - Ensure 'Network access: Do not allow anonymous enumeration of SAM accounts' is set to 'Enabled'"
+  license: GPL-2.0-or-later
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - all
+  galaxy_tags:
+    - security
+    - wazuh
+    - hardening
+    - cis
+    - windows
+    - network_access
+    - sam
+    - anonymous
+    - compliance
+    - remediation
+
+dependencies: []

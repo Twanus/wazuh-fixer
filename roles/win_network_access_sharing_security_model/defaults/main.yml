@@ -1,0 +1,5 @@
+---
+# defaults file for win_network_access_sharing_security_model
+# CIS Benchmark 2.3.10.12 (check 26049) requires 'Network access: Sharing and security model for local accounts' to be set to 'Classic - local users authenticate as themselves'
+# This value can be overridden in playbooks or inventory
+win_network_access_sharing_security_model_classic_value: 0

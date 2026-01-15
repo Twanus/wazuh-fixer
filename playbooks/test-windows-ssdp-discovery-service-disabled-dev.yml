@@ -1,0 +1,14 @@
+---
+# Test playbook for win_ssdp_discovery_service_disabled role (Development)
+# Usage: ansible-playbook -i inventory.ini playbooks/test-windows-ssdp-discovery-service-disabled-dev.yml
+
+- name: Test Windows SSDP Discovery Service Disabled Role (Development)
+  hosts: windows
+  gather_facts: true
+  become: false
+  roles:
+    - role: ../roles/win_ssdp_discovery_service_disabled  # noqa role-name[path]
+  post_tasks:
+    - name: Verify role completed successfully
+      ansible.builtin.debug:
+        msg: "Role execution completed. Check the output above for SSDP Discovery (SSDPSRV) Start configuration."

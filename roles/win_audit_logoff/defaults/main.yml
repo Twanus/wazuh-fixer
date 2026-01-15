@@ -1,0 +1,5 @@
+---
+# defaults file for win_audit_logoff
+# CIS Benchmark 17.5.3 (check 26147) requires 'Audit Logoff' to include 'Success'
+# This role uses auditpol.exe to configure the audit policy subcategory
+# The required setting must include "Success" (can be "Success" or "Success and Failure")

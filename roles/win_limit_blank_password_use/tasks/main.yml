@@ -1,0 +1,39 @@
+---
+# tasks file for win_limit_blank_password_use
+- name: Check current LimitBlankPasswordUse setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\System\CurrentControlSet\Control\Lsa"
+    $regName = "LimitBlankPasswordUse"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "0"
+    } else {
+      Write-Output $value
+    }
+  register: win_limit_blank_password_use_current_setting
+  changed_when: false
+
+- name: Display current LimitBlankPasswordUse setting
+  ansible.builtin.debug:
+    msg: >
+      Current LimitBlankPasswordUse: {{ win_limit_blank_password_use_current_setting.stdout | trim }}
+      (0=Disabled, 1=Enabled - limits local accounts with blank passwords to console logon only)
+
+- name: Set LimitBlankPasswordUse to Enabled
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Control\Lsa
+    name: LimitBlankPasswordUse
+    data: "{{ win_limit_blank_password_use_enabled_value }}"
+    type: dword
+  register: win_limit_blank_password_use_apply_setting
+  when: >
+    (win_limit_blank_password_use_current_setting.stdout | trim | int) != (win_limit_blank_password_use_enabled_value | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      LimitBlankPasswordUse is already set to {{ win_limit_blank_password_use_current_setting.stdout | trim }},
+      which meets the requirement (1 = Enabled - limits local accounts with blank passwords to console logon only)
+  when: >
+    (win_limit_blank_password_use_current_setting.stdout | trim | int) == (win_limit_blank_password_use_enabled_value | int)

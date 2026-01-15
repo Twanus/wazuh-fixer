@@ -1,0 +1,39 @@
+---
+# tasks file for win_interactive_logon_dont_display_last_user
+- name: Check current DontDisplayLastUserName setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System"
+    $regName = "DontDisplayLastUserName"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "0"
+    } else {
+      Write-Output $value
+    }
+  register: win_interactive_logon_dont_display_last_user_current_setting
+  changed_when: false
+
+- name: Display current DontDisplayLastUserName setting
+  ansible.builtin.debug:
+    msg: >
+      Current DontDisplayLastUserName: {{ win_interactive_logon_dont_display_last_user_current_setting.stdout | trim }}
+      (0=Disabled - last signed-in user name is displayed, 1=Enabled - last signed-in user name is not displayed)
+
+- name: Set DontDisplayLastUserName to Enabled
+  ansible.windows.win_regedit:
+    path: HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System
+    name: DontDisplayLastUserName
+    data: "{{ win_interactive_logon_dont_display_last_user_enabled_value }}"
+    type: dword
+  register: win_interactive_logon_dont_display_last_user_apply_setting
+  when: >
+    (win_interactive_logon_dont_display_last_user_current_setting.stdout | trim | int) != (win_interactive_logon_dont_display_last_user_enabled_value | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      DontDisplayLastUserName is already set to {{ win_interactive_logon_dont_display_last_user_current_setting.stdout | trim }},
+      which meets the requirement (1 = Enabled - last signed-in user name is not displayed)
+  when: >
+    (win_interactive_logon_dont_display_last_user_current_setting.stdout | trim | int) == (win_interactive_logon_dont_display_last_user_enabled_value | int)

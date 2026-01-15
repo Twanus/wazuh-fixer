@@ -1,0 +1,7 @@
+---
+# defaults file for win_winrm_service_disabled
+# CIS Benchmark 5.39 (check 26110) requires 'Windows Remote Management (WS-Management) (WinRM)' to be set to 'Disabled'
+# This value can be overridden in playbooks or inventory
+# Service Start values: 0=Boot, 1=System, 2=Auto, 3=Manual, 4=Disabled
+# Value 4 = Disabled (CIS requirement - WinRM is disabled)
+win_winrm_service_disabled_start_value: 4

@@ -1,0 +1,14 @@
+---
+# Test playbook for win_network_access_remotely_accessible_registry_paths role (Development)
+# Usage: ansible-playbook -i ../inventory.ini playbooks/test-windows-network-access-remotely-accessible-registry-paths-dev.yml
+
+- name: Test Windows Network Access Remotely Accessible Registry Paths Role (Development)
+  hosts: windows
+  gather_facts: true
+  become: false
+  roles:
+    - role: ../roles/win_network_access_remotely_accessible_registry_paths  # noqa role-name[path]
+  post_tasks:
+    - name: Verify role completed successfully
+      ansible.builtin.debug:
+        msg: "Role execution completed. Check the output above for AllowedExactPaths Machine configuration."

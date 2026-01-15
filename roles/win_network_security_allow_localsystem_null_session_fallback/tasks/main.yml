@@ -1,0 +1,39 @@
+---
+# tasks file for win_network_security_allow_localsystem_null_session_fallback
+- name: Check current AllowNullSessionFallback setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\System\CurrentControlSet\Control\Lsa\MSV1_0"
+    $regName = "AllowNullSessionFallback"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "0"
+    } else {
+      Write-Output $value
+    }
+  register: win_network_security_allow_localsystem_null_session_fallback_current_setting
+  changed_when: false
+
+- name: Display current AllowNullSessionFallback setting
+  ansible.builtin.debug:
+    msg: >
+      Current AllowNullSessionFallback: {{ win_network_security_allow_localsystem_null_session_fallback_current_setting.stdout | trim }}
+      (0=Disabled - NTLM is not allowed to fall back to a NULL session when used with LocalSystem [recommended], 1=Enabled - NTLM is allowed to fall back to a NULL session when used with LocalSystem)
+
+- name: Set AllowNullSessionFallback to Disabled
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Control\Lsa\MSV1_0
+    name: AllowNullSessionFallback
+    data: "{{ win_network_security_allow_localsystem_null_session_fallback_disabled_value }}"
+    type: dword
+  register: win_network_security_allow_localsystem_null_session_fallback_apply_setting
+  when: >
+    (win_network_security_allow_localsystem_null_session_fallback_current_setting.stdout | trim | int) != (win_network_security_allow_localsystem_null_session_fallback_disabled_value | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      AllowNullSessionFallback is already set to {{ win_network_security_allow_localsystem_null_session_fallback_current_setting.stdout | trim }},
+      which meets the requirement (0 = Disabled - NTLM is not allowed to fall back to a NULL session when used with LocalSystem)
+  when: >
+    (win_network_security_allow_localsystem_null_session_fallback_current_setting.stdout | trim | int) == (win_network_security_allow_localsystem_null_session_fallback_disabled_value | int)

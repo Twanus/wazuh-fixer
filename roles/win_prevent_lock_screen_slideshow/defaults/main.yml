@@ -1,0 +1,6 @@
+---
+# defaults file for win_prevent_lock_screen_slideshow
+# CIS Benchmark 18.1.1.2 (check 26167) requires 'Prevent enabling lock screen slide show' to be set to 'Enabled'
+# This value can be overridden in playbooks or inventory
+# Value 0 = Disabled/Not Set (lock screen slide show allowed), 1 = Enabled (lock screen slide show prevented, CIS requirement)
+win_prevent_lock_screen_slideshow_no_lock_screen_slideshow: 1

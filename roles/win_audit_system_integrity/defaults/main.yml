@@ -1,0 +1,5 @@
+---
+# defaults file for win_audit_system_integrity
+# CIS Benchmark 17.9.5 (check 26165) requires 'Audit System Integrity' to be set to 'Success and Failure'
+# This role uses auditpol.exe to configure the audit policy subcategory
+# The required setting is "Success and Failure" which enables both success and failure auditing

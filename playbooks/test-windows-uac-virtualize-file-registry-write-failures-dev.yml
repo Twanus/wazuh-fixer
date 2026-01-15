@@ -1,0 +1,15 @@
+---
+# Development test playbook - uses role directly from roles/ directory
+# Usage: ansible-playbook -i inventory.ini playbooks/test-windows-uac-virtualize-file-registry-write-failures-dev.yml
+
+- name: Test Windows UAC Virtualize File and Registry Write Failures Role (Development)
+  hosts: windows
+  gather_facts: true
+  become: false
+  roles:
+    # Use relative path for development/testing without installing collection
+    - role: ../roles/win_uac_virtualize_file_registry_write_failures  # noqa role-name[path]
+  post_tasks:
+    - name: Verify role completed successfully
+      ansible.builtin.debug:
+        msg: "Role execution completed. Check the output above for EnableVirtualization configuration."

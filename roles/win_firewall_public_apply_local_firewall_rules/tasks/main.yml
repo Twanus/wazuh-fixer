@@ -1,0 +1,47 @@
+---
+# tasks file for win_firewall_public_apply_local_firewall_rules
+- name: Check current AllowLocalPolicyMerge setting for Public Profile
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile"
+    $regName = "AllowLocalPolicyMerge"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "NOT_SET"
+    } else {
+      Write-Output $value
+    }
+  register: win_firewall_public_apply_local_firewall_rules_current_setting
+  changed_when: false
+
+- name: Display current AllowLocalPolicyMerge setting
+  ansible.builtin.debug:
+    msg: "Current Public Profile AllowLocalPolicyMerge: {{ win_firewall_public_apply_local_firewall_rules_current_setting.stdout | trim }} (0=No (CIS requirement), 1=Yes (allow local firewall rules), NOT_SET=Not configured)"
+
+- name: Ensure PublicProfile registry key exists
+  ansible.windows.win_regedit:
+    path: HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile
+    state: present
+  register: win_firewall_public_apply_local_firewall_rules_ensure_key
+  when: win_firewall_public_apply_local_firewall_rules_current_setting.stdout | trim == "NOT_SET"
+  changed_when: true
+
+- name: Set AllowLocalPolicyMerge to No for Public Profile
+  ansible.windows.win_regedit:
+    path: HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile
+    name: AllowLocalPolicyMerge
+    data: "{{ win_firewall_public_apply_local_firewall_rules_allow_local_policy_merge }}"
+    type: dword
+  register: win_firewall_public_apply_local_firewall_rules_apply_setting
+  when: >
+    (win_firewall_public_apply_local_firewall_rules_current_setting.stdout | trim == "NOT_SET") or
+    ((win_firewall_public_apply_local_firewall_rules_current_setting.stdout | trim | int) != (win_firewall_public_apply_local_firewall_rules_allow_local_policy_merge | int))
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      Public Profile AllowLocalPolicyMerge is already set to {{ win_firewall_public_apply_local_firewall_rules_current_setting.stdout | trim }},
+      which meets the requirement (0 = No, do not apply local firewall rules)
+  when: >
+    (win_firewall_public_apply_local_firewall_rules_current_setting.stdout | trim != "NOT_SET") and
+    ((win_firewall_public_apply_local_firewall_rules_current_setting.stdout | trim | int) == (win_firewall_public_apply_local_firewall_rules_allow_local_policy_merge | int))

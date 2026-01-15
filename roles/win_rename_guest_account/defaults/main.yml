@@ -1,0 +1,7 @@
+---
+# defaults file for win_rename_guest_account
+# CIS Benchmark 2.3.1.5 (check 26012) requires 'Accounts: Rename guest account' to be configured
+# The guest account should not be named one of the well-known names (Guest, guest, etc.)
+# This value can be overridden in playbooks or inventory
+# Important: Choose a name that does not indicate its purpose as a guest account
+win_rename_guest_account_new_name: "LocalGuest"

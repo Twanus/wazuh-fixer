@@ -1,0 +1,39 @@
+---
+# tasks file for win_domain_encrypt_secure_channel_when_possible
+- name: Check current SealSecureChannel setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\System\CurrentControlSet\Services\Netlogon\Parameters"
+    $regName = "SealSecureChannel"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "0"
+    } else {
+      Write-Output $value
+    }
+  register: win_domain_encrypt_secure_channel_when_possible_current_setting
+  changed_when: false
+
+- name: Display current SealSecureChannel setting
+  ansible.builtin.debug:
+    msg: >
+      Current SealSecureChannel: {{ win_domain_encrypt_secure_channel_when_possible_current_setting.stdout | trim }}
+      (0=Disabled/Not Set - secure channel data may not be encrypted when possible, 1=Enabled - secure channel data will be encrypted when possible)
+
+- name: Set SealSecureChannel to Enabled
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Services\Netlogon\Parameters
+    name: SealSecureChannel
+    data: "{{ win_domain_encrypt_secure_channel_when_possible_enabled_value }}"
+    type: dword
+  register: win_domain_encrypt_secure_channel_when_possible_apply_setting
+  when: >
+    (win_domain_encrypt_secure_channel_when_possible_current_setting.stdout | trim | int) != (win_domain_encrypt_secure_channel_when_possible_enabled_value | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      SealSecureChannel is already set to {{ win_domain_encrypt_secure_channel_when_possible_current_setting.stdout | trim }},
+      which meets the requirement (1 = Enabled - secure channel data will be encrypted when possible)
+  when: >
+    (win_domain_encrypt_secure_channel_when_possible_current_setting.stdout | trim | int) == (win_domain_encrypt_secure_channel_when_possible_enabled_value | int)

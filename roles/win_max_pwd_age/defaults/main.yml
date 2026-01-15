@@ -1,0 +1,5 @@
+---
+# defaults file for win_max_pwd_age
+# CIS Benchmark 1.1.2 (check 26001) requires maximum password age to be 365 or fewer days, but not 0
+# This value can be overridden in playbooks or inventory
+win_max_pwd_age_maximum_password_age: 365

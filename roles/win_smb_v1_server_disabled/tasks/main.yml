@@ -1,0 +1,66 @@
+---
+# tasks file for win_smb_v1_server_disabled
+- name: Check current SMB1 setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters"
+    $regName = "SMB1"
+    if (Test-Path -Path $regPath) {
+      $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+      if ($null -eq $value) {
+        Write-Output "NOT_SET"
+      } else {
+        Write-Output $value
+      }
+    } else {
+      Write-Output "KEY_NOT_EXISTS"
+    }
+  register: win_smb_v1_server_disabled_current_setting
+  changed_when: false
+
+- name: Display current SMB1 setting
+  ansible.builtin.debug:
+    msg: >
+      Current SMB1: {{ win_smb_v1_server_disabled_current_setting.stdout | trim }}
+      (KEY_NOT_EXISTS=Registry key does not exist, NOT_SET=Registry key exists but SMB1 value not set [compliant], 0=Disabled [recommended], any other value=Enabled)
+
+- name: Set SMB1 to Disabled
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters
+    name: SMB1
+    data: "{{ win_smb_v1_server_disabled_smb1_value }}"
+    type: dword
+  register: win_smb_v1_server_disabled_apply_setting
+  when: >
+    (win_smb_v1_server_disabled_current_setting.stdout | trim) != "KEY_NOT_EXISTS" and
+    (win_smb_v1_server_disabled_current_setting.stdout | trim) != "NOT_SET" and
+    (win_smb_v1_server_disabled_current_setting.stdout | trim | int) != (win_smb_v1_server_disabled_smb1_value | int)
+  changed_when: true
+
+- name: Set SMB1 to Disabled (when NOT_SET)
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters
+    name: SMB1
+    data: "{{ win_smb_v1_server_disabled_smb1_value }}"
+    type: dword
+  register: win_smb_v1_server_disabled_apply_setting_not_set
+  when: >
+    (win_smb_v1_server_disabled_current_setting.stdout | trim) == "NOT_SET"
+  changed_when: true
+
+- name: Report if registry key does not exist
+  ansible.builtin.debug:
+    msg: >
+      Registry key does not exist. This is compliant as the check condition allows for the key not existing.
+      However, the role will not create the key as it may indicate the Server service is not installed.
+  when: >
+    (win_smb_v1_server_disabled_current_setting.stdout | trim) == "KEY_NOT_EXISTS"
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      SMB1 is already set to {{ win_smb_v1_server_disabled_current_setting.stdout | trim }},
+      which meets the requirement (0 = Disabled - SMB v1 server is disabled)
+  when: >
+    (win_smb_v1_server_disabled_current_setting.stdout | trim) != "KEY_NOT_EXISTS" and
+    (win_smb_v1_server_disabled_current_setting.stdout | trim) != "NOT_SET" and
+    (win_smb_v1_server_disabled_current_setting.stdout | trim | int) == (win_smb_v1_server_disabled_smb1_value | int)

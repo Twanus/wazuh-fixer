@@ -1,0 +1,25 @@
+---
+# metadata file for win_firewall_public_logging_dropped_packets
+galaxy_info:
+  author: Antoon Vereecken
+  description: >
+    Remediates CIS Benchmark 9.3.8 (Wazuh check 26137): Ensure 'Windows Firewall: Public: Logging: Log dropped packets' is set to 'Yes'.
+    Configures the Windows Firewall Public Profile logging to record when dropped packets occur.
+  license: GPL-2.0-or-later
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - all
+  galaxy_tags:
+    - security
+    - wazuh
+    - hardening
+    - cis
+    - windows
+    - firewall
+    - logging
+    - public_profile
+    - compliance
+
+dependencies: []

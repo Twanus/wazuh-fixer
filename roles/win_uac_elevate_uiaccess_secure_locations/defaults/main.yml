@@ -1,0 +1,6 @@
+---
+# defaults file for win_uac_elevate_uiaccess_secure_locations
+# CIS Benchmark 2.3.17.5 (check 26068) requires 'User Account Control: Only elevate UIAccess applications that are installed in secure locations' to be set to 'Enabled'
+# This value can be overridden in playbooks or inventory
+# Value 1 = Enabled - UIAccess applications must be installed in secure locations (CIS requirement)
+win_uac_elevate_uiaccess_secure_locations_enable_secure_uia_paths: 1

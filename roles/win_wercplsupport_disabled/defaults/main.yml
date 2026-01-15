@@ -1,0 +1,7 @@
+---
+# defaults file for win_wercplsupport_disabled
+# CIS Benchmark 5.18 (check 26089) requires 'Problem Reports and Solutions Control Panel Support (wercplsupport)' to be set to 'Disabled'
+# This value can be overridden in playbooks or inventory
+# Service Start values: 0=Boot, 1=System, 2=Auto, 3=Manual, 4=Disabled
+# Value 4 = Disabled (CIS requirement - Problem Reports and Solutions Control Panel Support is disabled)
+win_wercplsupport_disabled_start_value: 4

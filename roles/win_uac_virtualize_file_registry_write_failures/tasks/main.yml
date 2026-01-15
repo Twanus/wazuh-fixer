@@ -1,0 +1,39 @@
+---
+# tasks file for win_uac_virtualize_file_registry_write_failures
+- name: Check current EnableVirtualization setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System"
+    $regName = "EnableVirtualization"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "0"
+    } else {
+      Write-Output $value
+    }
+  register: win_uac_virtualize_file_registry_write_failures_current_setting
+  changed_when: false
+
+- name: Display current EnableVirtualization setting
+  ansible.builtin.debug:
+    msg: >
+      Current EnableVirtualization: {{ win_uac_virtualize_file_registry_write_failures_current_setting.stdout | trim }}
+      (0=Disabled/Not Set - application write failures not redirected, 1=Enabled - application write failures redirected to per-user locations [recommended])
+
+- name: Set EnableVirtualization to Enabled
+  ansible.windows.win_regedit:
+    path: HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System
+    name: EnableVirtualization
+    data: "{{ win_uac_virtualize_file_registry_write_failures_enable_virtualization }}"
+    type: dword
+  register: win_uac_virtualize_file_registry_write_failures_apply_setting
+  when: >
+    (win_uac_virtualize_file_registry_write_failures_current_setting.stdout | trim | int) != (win_uac_virtualize_file_registry_write_failures_enable_virtualization | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      EnableVirtualization is already set to {{ win_uac_virtualize_file_registry_write_failures_current_setting.stdout | trim }},
+      which meets the requirement (1 = Enabled - application write failures redirected to per-user locations)
+  when: >
+    (win_uac_virtualize_file_registry_write_failures_current_setting.stdout | trim | int) == (win_uac_virtualize_file_registry_write_failures_enable_virtualization | int)

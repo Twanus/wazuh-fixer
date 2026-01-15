@@ -1,0 +1,5 @@
+---
+# defaults file for win_smb_v1_server_disabled
+# CIS Benchmark 18.4.4 (check 26173) requires 'Configure SMB v1 server' to be set to 'Disabled'
+# This value can be overridden in playbooks or inventory
+win_smb_v1_server_disabled_smb1_value: 0

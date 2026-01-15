@@ -1,0 +1,5 @@
+---
+# defaults file for win_audit_group_membership
+# CIS Benchmark 17.5.2 (check 26146) requires 'Audit Group Membership' to include 'Success'
+# This role uses auditpol.exe to configure the audit policy subcategory
+# The required setting must include "Success" (can be "Success" or "Success and Failure")

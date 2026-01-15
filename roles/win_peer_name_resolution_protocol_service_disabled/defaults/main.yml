@@ -1,0 +1,7 @@
+---
+# defaults file for win_peer_name_resolution_protocol_service_disabled
+# CIS Benchmark 5.13 (check 26084) requires 'Peer Name Resolution Protocol (PNRPsvc)' to be set to 'Disabled' or 'Not Installed'
+# This value can be overridden in playbooks or inventory
+# Value 4 = Disabled (CIS requirement)
+# Windows service Start values: 0=Boot, 1=System, 2=Auto, 3=Manual, 4=Disabled
+win_peer_name_resolution_protocol_service_disabled_start_value: 4

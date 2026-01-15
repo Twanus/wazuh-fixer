@@ -1,0 +1,14 @@
+---
+# Test playbook for win_audit_user_account_management role (Development)
+# Usage: ansible-playbook -i inventory.ini playbooks/test-windows-audit-user-account-management-dev.yml
+
+- name: Test Windows Audit User Account Management Role (Development)
+  hosts: windows
+  gather_facts: true
+  become: false
+  roles:
+    - role: ../roles/win_audit_user_account_management  # noqa role-name[path]
+  post_tasks:
+    - name: Verify role completed successfully
+      ansible.builtin.debug:
+        msg: "Role execution completed. Check the output above for User Account Management audit policy configuration."

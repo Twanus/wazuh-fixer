@@ -1,0 +1,7 @@
+---
+# defaults file for win_simple_tcpip_services_disabled
+# CIS Benchmark 5.27 (check 26098) requires 'Simple TCP/IP Services (simptcp)' to be set to 'Disabled' or 'Not Installed'
+# This value can be overridden in playbooks or inventory
+# Service Start values: 0=Boot, 1=System, 2=Auto, 3=Manual, 4=Disabled
+# Value 4 = Disabled (CIS requirement - Simple TCP/IP Services is disabled)
+win_simple_tcpip_services_disabled_start_value: 4

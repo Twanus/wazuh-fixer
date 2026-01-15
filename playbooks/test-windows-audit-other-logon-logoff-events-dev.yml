@@ -1,0 +1,14 @@
+---
+# Test playbook for win_audit_other_logon_logoff_events role (Development)
+# Usage: ansible-playbook -i inventory.ini playbooks/test-windows-audit-other-logon-logoff-events-dev.yml
+
+- name: Test Windows Audit Other Logon/Logoff Events Role (Development)
+  hosts: windows
+  gather_facts: true
+  become: false
+  roles:
+    - role: ../roles/win_audit_other_logon_logoff_events  # noqa role-name[path]
+  post_tasks:
+    - name: Verify role completed successfully
+      ansible.builtin.debug:
+        msg: "Role execution completed. Check the output above for Other Logon/Logoff Events audit policy configuration."

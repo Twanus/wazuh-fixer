@@ -1,0 +1,14 @@
+---
+# Test playbook for win_network_security_force_logoff_logon_hours_expire role (Development)
+# Usage: ansible-playbook -i inventory.ini playbooks/test-windows-network-security-force-logoff-logon-hours-expire-dev.yml
+
+- name: Test Windows Network Security Force Logoff Logon Hours Expire Role (Development)
+  hosts: windows
+  gather_facts: true
+  become: false
+  roles:
+    - role: ../roles/win_network_security_force_logoff_logon_hours_expire  # noqa role-name[path]
+  post_tasks:
+    - name: Verify role completed successfully
+      ansible.builtin.debug:
+        msg: "Role execution completed. Check the output above for EnableForcedLogOff configuration."

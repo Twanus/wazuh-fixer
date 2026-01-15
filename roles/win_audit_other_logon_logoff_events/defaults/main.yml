@@ -1,0 +1,5 @@
+---
+# defaults file for win_audit_other_logon_logoff_events
+# CIS Benchmark 17.5.5 (check 26149) requires 'Audit Other Logon/Logoff Events' to be set to 'Success and Failure'
+# This role uses auditpol.exe to configure the audit policy subcategory
+# The required setting is "Success and Failure" which enables both success and failure auditing

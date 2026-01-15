@@ -1,0 +1,23 @@
+---
+galaxy_info:
+  author: Antoon Vereecken
+  description: "Remediate CIS Benchmark 2.3.11.8 (check 26057) - Ensure 'Network security: LDAP client signing requirements' is set to 'Negotiate signing' or higher"
+  license: GPL-2.0-or-later
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - all
+  galaxy_tags:
+    - security
+    - wazuh
+    - hardening
+    - cis
+    - windows
+    - network
+    - ldap
+    - signing
+    - compliance
+    - remediation
+
+dependencies: []

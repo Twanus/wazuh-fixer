@@ -1,0 +1,7 @@
+---
+# defaults file for win_remote_desktop_services_usermode_port_redirector_disabled
+# CIS Benchmark 5.22 (check 26093) requires 'Remote Desktop Services UserMode Port Redirector (UmRdpService)' to be set to 'Disabled'
+# This value can be overridden in playbooks or inventory
+# Service Start values: 0=Boot, 1=System, 2=Auto, 3=Manual, 4=Disabled
+# Value 4 = Disabled (CIS requirement - Remote Desktop Services UserMode Port Redirector service is disabled)
+win_remote_desktop_services_usermode_port_redirector_disabled_start_value: 4

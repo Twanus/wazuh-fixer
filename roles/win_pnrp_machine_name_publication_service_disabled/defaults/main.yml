@@ -1,0 +1,7 @@
+---
+# defaults file for win_pnrp_machine_name_publication_service_disabled
+# CIS Benchmark 5.16 (check 26087) requires 'PNRP Machine Name Publication Service (PNRPAutoReg)' to be set to 'Disabled'
+# This value can be overridden in playbooks or inventory
+# Service Start values: 0=Boot, 1=System, 2=Auto, 3=Manual, 4=Disabled
+# Value 4 = Disabled (CIS requirement - PNRP Machine Name Publication Service is disabled)
+win_pnrp_machine_name_publication_service_disabled_start_value: 4

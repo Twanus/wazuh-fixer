@@ -1,0 +1,39 @@
+---
+# tasks file for win_interactive_logon_require_ctrl_alt_del
+- name: Check current DisableCAD setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System"
+    $regName = "DisableCAD"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "1"
+    } else {
+      Write-Output $value
+    }
+  register: win_interactive_logon_require_ctrl_alt_del_current_setting
+  changed_when: false
+
+- name: Display current DisableCAD setting
+  ansible.builtin.debug:
+    msg: >
+      Current DisableCAD: {{ win_interactive_logon_require_ctrl_alt_del_current_setting.stdout | trim }}
+      (0=Disabled - CTRL+ALT+DEL required before logon, 1=Enabled - CTRL+ALT+DEL not required)
+
+- name: Set DisableCAD to Disabled
+  ansible.windows.win_regedit:
+    path: HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System
+    name: DisableCAD
+    data: "{{ win_interactive_logon_require_ctrl_alt_del_disabled_value }}"
+    type: dword
+  register: win_interactive_logon_require_ctrl_alt_del_apply_setting
+  when: >
+    (win_interactive_logon_require_ctrl_alt_del_current_setting.stdout | trim | int) != (win_interactive_logon_require_ctrl_alt_del_disabled_value | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      DisableCAD is already set to {{ win_interactive_logon_require_ctrl_alt_del_current_setting.stdout | trim }},
+      which meets the requirement (0 = Disabled - CTRL+ALT+DEL required before logon)
+  when: >
+    (win_interactive_logon_require_ctrl_alt_del_current_setting.stdout | trim | int) == (win_interactive_logon_require_ctrl_alt_del_disabled_value | int)

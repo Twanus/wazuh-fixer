@@ -1,0 +1,66 @@
+---
+# tasks file for win_world_wide_web_publishing_service_disabled
+- name: Check if World Wide Web Publishing Service registry key exists and get Start setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\SYSTEM\CurrentControlSet\Services\W3SVC"
+    $regName = "Start"
+    if (Test-Path -Path $regPath) {
+      $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+      if ($null -eq $value) {
+        Write-Output "NOT_SET"
+      } else {
+        Write-Output $value
+      }
+    } else {
+      Write-Output "KEY_NOT_EXISTS"
+    }
+  register: win_world_wide_web_publishing_service_disabled_current_setting
+  changed_when: false
+
+- name: Display current World Wide Web Publishing Service status
+  ansible.builtin.debug:
+    msg: >
+      Current World Wide Web Publishing Service: {{ win_world_wide_web_publishing_service_disabled_current_setting.stdout | trim }}
+      (KEY_NOT_EXISTS=Service not installed [compliant], NOT_SET=Registry key exists but Start value not set, 0=Boot, 1=System, 2=Auto, 3=Manual, 4=Disabled [recommended])
+
+- name: Set World Wide Web Publishing Service Start to Disabled
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Services\W3SVC
+    name: Start
+    data: "{{ win_world_wide_web_publishing_service_disabled_start_value }}"
+    type: dword
+  register: win_world_wide_web_publishing_service_disabled_apply_setting
+  when: >
+    (win_world_wide_web_publishing_service_disabled_current_setting.stdout | trim) != "KEY_NOT_EXISTS" and
+    (win_world_wide_web_publishing_service_disabled_current_setting.stdout | trim) != "NOT_SET" and
+    (win_world_wide_web_publishing_service_disabled_current_setting.stdout | trim | int) != (win_world_wide_web_publishing_service_disabled_start_value | int)
+  changed_when: true
+
+- name: Set World Wide Web Publishing Service Start to Disabled (when NOT_SET)
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Services\W3SVC
+    name: Start
+    data: "{{ win_world_wide_web_publishing_service_disabled_start_value }}"
+    type: dword
+  register: win_world_wide_web_publishing_service_disabled_apply_setting_not_set
+  when: >
+    (win_world_wide_web_publishing_service_disabled_current_setting.stdout | trim) == "NOT_SET"
+  changed_when: true
+
+- name: Report if service is not installed (compliant)
+  ansible.builtin.debug:
+    msg: >
+      World Wide Web Publishing Service is not installed (registry key does not exist),
+      which meets the requirement (Disabled or Not Installed)
+  when: >
+    (win_world_wide_web_publishing_service_disabled_current_setting.stdout | trim) == "KEY_NOT_EXISTS"
+
+- name: Report if service is already disabled (compliant)
+  ansible.builtin.debug:
+    msg: >
+      World Wide Web Publishing Service Start is already set to {{ win_world_wide_web_publishing_service_disabled_current_setting.stdout | trim }},
+      which meets the requirement (4 = Disabled)
+  when: >
+    (win_world_wide_web_publishing_service_disabled_current_setting.stdout | trim) != "KEY_NOT_EXISTS" and
+    (win_world_wide_web_publishing_service_disabled_current_setting.stdout | trim) != "NOT_SET" and
+    (win_world_wide_web_publishing_service_disabled_current_setting.stdout | trim | int) == (win_world_wide_web_publishing_service_disabled_start_value | int)

@@ -1,0 +1,46 @@
+---
+# tasks file for win_network_security_pku2u_allow_online_id
+- name: Check current AllowOnlineID setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\System\CurrentControlSet\Control\Lsa\pku2u"
+    $regName = "AllowOnlineID"
+    $key = Get-Item -Path $regPath -ErrorAction SilentlyContinue
+    if ($null -eq $key) {
+      Write-Output ""
+    } else {
+      $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+      if ($null -eq $value) {
+        Write-Output ""
+      } else {
+        Write-Output $value
+      }
+    }
+  register: win_network_security_pku2u_allow_online_id_current_setting
+  changed_when: false
+
+- name: Display current AllowOnlineID setting
+  ansible.builtin.debug:
+    msg: >
+      Current AllowOnlineID: {{ win_network_security_pku2u_allow_online_id_current_setting.stdout | trim if win_network_security_pku2u_allow_online_id_current_setting.stdout | trim != "" else "(Not set)" }}
+      (Not set = not configured, 0 = Disabled - PKU2U authentication requests using online identities are not allowed [recommended], 1 = Enabled - PKU2U authentication requests using online identities are allowed)
+
+- name: Set AllowOnlineID to Disabled
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Control\Lsa\pku2u
+    name: AllowOnlineID
+    data: "{{ win_network_security_pku2u_allow_online_id_disabled_value }}"
+    type: dword
+  register: win_network_security_pku2u_allow_online_id_apply_setting
+  when: >
+    (win_network_security_pku2u_allow_online_id_current_setting.stdout | trim == "") or
+    ((win_network_security_pku2u_allow_online_id_current_setting.stdout | trim | int) != (win_network_security_pku2u_allow_online_id_disabled_value | int))
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      AllowOnlineID is already set to {{ win_network_security_pku2u_allow_online_id_current_setting.stdout | trim }},
+      which meets the requirement (0 = Disabled - PKU2U authentication requests using online identities are not allowed)
+  when: >
+    (win_network_security_pku2u_allow_online_id_current_setting.stdout | trim != "") and
+    ((win_network_security_pku2u_allow_online_id_current_setting.stdout | trim | int) == (win_network_security_pku2u_allow_online_id_disabled_value | int))

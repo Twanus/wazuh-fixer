@@ -1,0 +1,23 @@
+---
+galaxy_info:
+  author: Antoon Vereecken
+  description: "Remediate CIS Benchmark 2.3.10.8 (check 26045) - Ensure 'Network access: Remotely accessible registry paths and sub-paths' is configured"
+  license: GPL-2.0-or-later
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - all
+  galaxy_tags:
+    - security
+    - wazuh
+    - hardening
+    - cis
+    - windows
+    - network_access
+    - registry
+    - remote_access
+    - compliance
+    - remediation
+
+dependencies: []

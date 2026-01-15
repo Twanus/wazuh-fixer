@@ -1,0 +1,47 @@
+---
+# tasks file for win_firewall_public_logging_name
+- name: Check current LogFilePath setting for Public Profile Logging
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile\Logging"
+    $regName = "LogFilePath"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value -or $value -eq "") {
+      Write-Output "NOT_SET"
+    } else {
+      Write-Output $value
+    }
+  register: win_firewall_public_logging_name_current_setting
+  changed_when: false
+
+- name: Display current LogFilePath setting
+  ansible.builtin.debug:
+    msg: "Current Public Profile Logging LogFilePath: {{ win_firewall_public_logging_name_current_setting.stdout | trim }} (NOT_SET = Not configured)"
+
+- name: Ensure PublicProfile\Logging registry key exists
+  ansible.windows.win_regedit:
+    path: HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile\Logging
+    state: present
+  register: win_firewall_public_logging_name_ensure_key
+  when: win_firewall_public_logging_name_current_setting.stdout | trim == "NOT_SET"
+  changed_when: true
+
+- name: Set LogFilePath to required value for Public Profile Logging
+  ansible.windows.win_regedit:
+    path: HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile\Logging
+    name: LogFilePath
+    data: "{{ win_firewall_public_logging_name_log_file_path }}"
+    type: string
+  register: win_firewall_public_logging_name_apply_setting
+  when: >
+    (win_firewall_public_logging_name_current_setting.stdout | trim == "NOT_SET") or
+    (win_firewall_public_logging_name_current_setting.stdout | trim != win_firewall_public_logging_name_log_file_path)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      Public Profile Logging LogFilePath is already set to "{{ win_firewall_public_logging_name_current_setting.stdout | trim }}",
+      which meets the requirement (%SystemRoot%\System32\logfiles\firewall\publicfw.log)
+  when: >
+    (win_firewall_public_logging_name_current_setting.stdout | trim != "NOT_SET") and
+    (win_firewall_public_logging_name_current_setting.stdout | trim == win_firewall_public_logging_name_log_file_path)

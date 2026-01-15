@@ -1,0 +1,6 @@
+---
+# defaults file for win_prevent_printer_drivers
+# CIS Benchmark 2.3.4.1 (check 26015) requires 'Devices: Prevent users from installing printer drivers' to be set to 'Enabled'
+# This value can be overridden in playbooks or inventory
+# Value 1 = Enabled (CIS requirement)
+win_prevent_printer_drivers_enabled_value: 1

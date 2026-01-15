@@ -1,0 +1,48 @@
+---
+# tasks file for win_min_pwd_age
+- name: Check current minimum password age
+  ansible.windows.win_shell: |
+    secedit /export /cfg $env:TEMP\secpol.cfg 2>&1 | Out-Null
+    $content = Get-Content $env:TEMP\secpol.cfg | Select-String "MinimumPasswordAge"
+    Remove-Item $env:TEMP\secpol.cfg -ErrorAction SilentlyContinue
+    if ($content) {
+      $value = ($content -split '=')[1].Trim()
+      Write-Output $value
+    } else {
+      Write-Output "0"
+    }
+  register: win_min_pwd_age_current_minimum_password_age
+  changed_when: false
+
+- name: Display current minimum password age
+  ansible.builtin.debug:
+    msg: "Current minimum password age: {{ win_min_pwd_age_current_minimum_password_age.stdout | trim }} days"
+
+- name: Set minimum password age using net accounts
+  ansible.windows.win_shell: |
+    # Use net accounts command which is more reliable than secedit
+    # Ensure value is at least 1 day (CIS requirement)
+    $minAge = {{ win_min_pwd_age_minimum_password_age }}
+    if ($minAge -lt 1) {
+      Write-Error "Minimum password age must be at least 1 day."
+      exit 1
+    }
+    $result = net accounts /minpwage:$minAge 2>&1
+    $exitCode = $LASTEXITCODE
+    if ($exitCode -eq 0) {
+      Write-Output "Minimum password age policy set to $minAge days successfully"
+    } else {
+      Write-Error "Failed to set minimum password age policy. Exit code: $exitCode, Output: $result"
+      exit $exitCode
+    }
+  register: win_min_pwd_age_apply_policy
+  when: win_min_pwd_age_current_minimum_password_age.stdout | trim | int < win_min_pwd_age_minimum_password_age | int
+  changed_when: true
+  notify: Win_min_pwd_age_verify_minimum_password_age
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      Minimum password age is already set to {{ win_min_pwd_age_current_minimum_password_age.stdout | trim }} days,
+      which meets the requirement (>= {{ win_min_pwd_age_minimum_password_age }} days)
+  when: win_min_pwd_age_current_minimum_password_age.stdout | trim | int >= win_min_pwd_age_minimum_password_age | int

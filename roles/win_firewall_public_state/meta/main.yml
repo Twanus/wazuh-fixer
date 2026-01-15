@@ -1,0 +1,23 @@
+---
+galaxy_info:
+  author: Antoon Vereecken
+  description: "Remediate CIS Benchmark 9.3.1 (check 26130) - Ensure 'Windows Firewall: Public: Firewall state' is set to 'On (recommended)'"
+  license: GPL-2.0-or-later
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - all
+  galaxy_tags:
+    - security
+    - wazuh
+    - hardening
+    - cis
+    - windows
+    - firewall
+    - public
+    - network
+    - compliance
+    - remediation
+
+dependencies: []

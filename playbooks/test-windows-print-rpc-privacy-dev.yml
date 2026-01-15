@@ -1,0 +1,14 @@
+---
+# Test playbook for win_print_rpc_privacy role (Development)
+# Usage: ansible-playbook -i inventory.ini playbooks/test-windows-print-rpc-privacy-dev.yml
+
+- name: Test Windows Print RPC Privacy Role (Development)
+  hosts: windows
+  gather_facts: true
+  become: false
+  roles:
+    - role: ../roles/win_print_rpc_privacy  # noqa role-name[path]
+  post_tasks:
+    - name: Verify role completed successfully
+      ansible.builtin.debug:
+        msg: "Role execution completed. Check the output above for RpcAuthnLevelPrivacyEnabled configuration."

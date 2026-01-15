@@ -1,0 +1,78 @@
+---
+# tasks file for win_account_lockout_duration
+- name: Check current account lockout duration
+  ansible.windows.win_shell: |
+    secedit /export /cfg $env:TEMP\secpol.cfg 2>&1 | Out-Null
+    $content = Get-Content $env:TEMP\secpol.cfg | Select-String "LockoutDuration"
+    Remove-Item $env:TEMP\secpol.cfg -ErrorAction SilentlyContinue
+    if ($content) {
+      $value = ($content -split '=')[1].Trim()
+      Write-Output $value
+    } else {
+      Write-Output "0"
+    }
+  register: win_account_lockout_duration_current_lockout_duration
+  changed_when: false
+
+- name: Display current account lockout duration
+  ansible.builtin.debug:
+    msg: "Current account lockout duration: {{ win_account_lockout_duration_current_lockout_duration.stdout | trim }} minutes"
+
+- name: Set account lockout duration using secedit
+  ansible.windows.win_shell: |
+    # Create INF file for secedit
+    # Ensure value is at least 15 minutes (CIS requirement)
+    $lockoutDuration = {{ win_account_lockout_duration_lockout_duration }}
+    if ($lockoutDuration -lt 15) {
+      Write-Error "Account lockout duration must be at least 15 minutes (CIS requirement)."
+      exit 1
+    }
+    $infLines = @(
+      "[Unicode]",
+      "Unicode=yes",
+      "[System Access]",
+      "LockoutDuration = $lockoutDuration"
+    )
+    $infContent = $infLines -join "`r`n" + "`r`n"
+    
+    # Use C:\Windows\Temp which secedit can access
+    $tempDir = "C:\Windows\Temp"
+    if (-not (Test-Path $tempDir)) {
+      New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
+    }
+    $infPath = "$tempDir\lockout_duration.inf"
+    $dbPath = "$tempDir\secpol.sdb"
+    
+    # Clean up any existing files
+    Remove-Item $infPath -ErrorAction SilentlyContinue
+    Remove-Item $dbPath -ErrorAction SilentlyContinue
+    
+    # Write INF file
+    [System.IO.File]::WriteAllText($infPath, $infContent, [System.Text.Encoding]::ASCII)
+    
+    # Apply policy using secedit
+    $process = Start-Process -FilePath "secedit.exe" -ArgumentList "/configure", "/db", $dbPath, "/cfg", $infPath, "/quiet" -Wait -PassThru -NoNewWindow
+    $exitCode = $process.ExitCode
+    
+    # Cleanup
+    Start-Sleep -Seconds 1
+    Remove-Item $dbPath -ErrorAction SilentlyContinue
+    Remove-Item $infPath -ErrorAction SilentlyContinue
+    
+    if ($exitCode -eq 0) {
+      Write-Output "Account lockout duration policy set to $lockoutDuration minutes successfully"
+    } else {
+      Write-Output "secedit completed with exit code: $exitCode"
+    }
+  register: win_account_lockout_duration_apply_policy
+  when: win_account_lockout_duration_current_lockout_duration.stdout | trim | int < win_account_lockout_duration_lockout_duration | int
+  changed_when: true
+  failed_when: false
+  notify: Win_account_lockout_duration_verify_lockout_duration
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      Account lockout duration is already set to {{ win_account_lockout_duration_current_lockout_duration.stdout | trim }} minutes,
+      which meets the requirement (>= {{ win_account_lockout_duration_lockout_duration }} minutes)
+  when: win_account_lockout_duration_current_lockout_duration.stdout | trim | int >= win_account_lockout_duration_lockout_duration | int

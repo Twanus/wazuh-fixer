@@ -1,0 +1,6 @@
+---
+# defaults file for win_domain_sign_secure_channel_when_possible
+# CIS Benchmark 2.3.6.3 (check 26018) requires 'Domain member: Digitally sign secure channel data (when possible)' to be set to 'Enabled'
+# This value can be overridden in playbooks or inventory
+# Value 1 = Enabled (CIS requirement)
+win_domain_sign_secure_channel_when_possible_enabled_value: 1

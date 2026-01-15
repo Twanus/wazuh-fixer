@@ -1,0 +1,35 @@
+---
+# meta file for win_audit_other_policy_change_events
+galaxy_info:
+  author: twanus
+  description: >
+    Ensures 'Audit Other Policy Change Events' is set to include 'Failure'.
+    This role remediates CIS Benchmark 17.7.5 (Wazuh check 26159).
+    This setting helps detect errors in applied Security settings which came from Group Policy,
+    and failure events related to Cryptographic Next Generation (CNG) functions.
+  company: twanus
+  license: MIT
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - all
+  galaxy_tags:
+    - windows
+    - security
+    - hardening
+    - audit
+    - audit-policy
+    - policy-change
+    - cis
+    - cis-benchmark
+    - cis-17.7.5
+    - wazuh
+    - wazuh-26159
+    - compliance
+    - nist
+    - pci-dss
+    - iso27001
+    - cmmc
+
+dependencies: []

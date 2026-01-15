@@ -1,0 +1,42 @@
+---
+# tasks file for win_ms_network_server_spn_validation
+- name: Check current SMBServerNameHardeningLevel setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\SYSTEM\CurrentControlSet\Services\LanManServer\Parameters"
+    $regName = "SMBServerNameHardeningLevel"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "0"
+    } else {
+      Write-Output $value
+    }
+  register: win_ms_network_server_spn_validation_current_setting
+  changed_when: false
+
+- name: Display current SMBServerNameHardeningLevel setting
+  ansible.builtin.debug:
+    msg: >
+      Current SMBServerNameHardeningLevel: {{ win_ms_network_server_spn_validation_current_setting.stdout | trim }}
+      (0=Off - no SPN validation, 1=Accept if provided by client [recommended], 2=Required from client [also conforms])
+
+- name: Set SMBServerNameHardeningLevel to required value
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Services\LanManServer\Parameters
+    name: SMBServerNameHardeningLevel
+    data: "{{ win_ms_network_server_spn_validation_validation_level }}"
+    type: dword
+  register: win_ms_network_server_spn_validation_apply_setting
+  when: >
+    (win_ms_network_server_spn_validation_current_setting.stdout | trim | int) < 1 or
+    (win_ms_network_server_spn_validation_current_setting.stdout | trim | int) != (win_ms_network_server_spn_validation_validation_level | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      SMBServerNameHardeningLevel is already set to {{ win_ms_network_server_spn_validation_current_setting.stdout | trim }}
+      ({{ 'Accept if provided by client' if win_ms_network_server_spn_validation_current_setting.stdout | trim | int == 1 else 'Required from client' }}),
+      which meets the requirement (Accept if provided by client or higher)
+  when: >
+    (win_ms_network_server_spn_validation_current_setting.stdout | trim | int) >= 1 and
+    (win_ms_network_server_spn_validation_current_setting.stdout | trim | int) == (win_ms_network_server_spn_validation_validation_level | int)

@@ -1,0 +1,6 @@
+---
+# defaults file for win_network_security_local_system_computer_identity
+# CIS Benchmark 2.3.11.1 (check 26050) requires 'Network security: Allow Local System to use computer identity for NTLM' to be set to 'Enabled'
+# This value can be overridden in playbooks or inventory
+# Value 1 = Enabled (CIS requirement)
+win_network_security_local_system_computer_identity_enabled_value: 1

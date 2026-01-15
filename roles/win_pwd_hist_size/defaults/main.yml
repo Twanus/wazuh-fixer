@@ -1,0 +1,5 @@
+---
+# defaults file for win_pwd_hist_size
+# CIS Benchmark 1.1.1 (check 26000) requires 24 or more passwords
+# This value can be overridden in playbooks or inventory
+win_pwd_hist_size_password_history_size: 24

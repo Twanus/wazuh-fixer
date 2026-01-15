@@ -1,0 +1,6 @@
+---
+# defaults file for win_block_ms_accounts
+# CIS Benchmark 2.3.1.1 (check 26008) requires 'Accounts: Block Microsoft accounts' to be set to 'Users can't add or log on with Microsoft accounts'
+# This value can be overridden in playbooks or inventory
+# Value 3 = Users can't add or log on with Microsoft accounts (CIS requirement)
+win_block_ms_accounts_no_connected_user: 3

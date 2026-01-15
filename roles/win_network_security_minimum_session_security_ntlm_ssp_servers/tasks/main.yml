@@ -1,0 +1,39 @@
+---
+# tasks file for win_network_security_minimum_session_security_ntlm_ssp_servers
+- name: Check current NTLMMinServerSec setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\System\CurrentControlSet\Control\Lsa\MSV1_0"
+    $regName = "NTLMMinServerSec"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "0"
+    } else {
+      Write-Output $value
+    }
+  register: win_network_security_minimum_session_security_ntlm_ssp_servers_current_setting
+  changed_when: false
+
+- name: Display current NTLMMinServerSec setting
+  ansible.builtin.debug:
+    msg: >
+      Current NTLMMinServerSec: {{ win_network_security_minimum_session_security_ntlm_ssp_servers_current_setting.stdout | trim }}
+      (Required: 537395200 = Require NTLMv2 session security, Require 128-bit encryption)
+
+- name: Set NTLMMinServerSec to Require NTLMv2 session security, Require 128-bit encryption
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Control\Lsa\MSV1_0
+    name: NTLMMinServerSec
+    data: "{{ win_network_security_minimum_session_security_ntlm_ssp_servers_required_value }}"
+    type: dword
+  register: win_network_security_minimum_session_security_ntlm_ssp_servers_apply_setting
+  when: >
+    (win_network_security_minimum_session_security_ntlm_ssp_servers_current_setting.stdout | trim | int) != (win_network_security_minimum_session_security_ntlm_ssp_servers_required_value | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      NTLMMinServerSec is already set to {{ win_network_security_minimum_session_security_ntlm_ssp_servers_current_setting.stdout | trim }},
+      which meets the requirement (537395200 = Require NTLMv2 session security, Require 128-bit encryption)
+  when: >
+    (win_network_security_minimum_session_security_ntlm_ssp_servers_current_setting.stdout | trim | int) == (win_network_security_minimum_session_security_ntlm_ssp_servers_required_value | int)

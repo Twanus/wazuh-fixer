@@ -1,0 +1,18 @@
+---
+# defaults file for linux_wazuh_rootcheck_false_positives
+# List of files to verify and potentially add to Wazuh rootcheck ignore list
+# These are typically false positives from rootcheck rule 510 (trojaned file detection)
+linux_wazuh_rootcheck_false_positives_files:
+  - /bin/passwd
+  - /usr/bin/passwd
+  - /bin/chfn
+  - /usr/bin/chfn
+  - /bin/chsh
+  - /usr/bin/chsh
+
+# Wazuh agent configuration file path
+linux_wazuh_rootcheck_false_positives_ossec_conf: /var/ossec/etc/ossec.conf
+
+# Whether to automatically configure Wazuh if files are verified as legitimate
+# Set to false to only verify without making changes
+linux_wazuh_rootcheck_false_positives_auto_configure: true

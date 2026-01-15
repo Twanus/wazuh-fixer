@@ -1,0 +1,23 @@
+---
+galaxy_info:
+  author: Antoon Vereecken
+  description: "Remediate CIS Benchmark 2.3.7.8 (check 26029) - Ensure 'Interactive logon: Prompt user to change password before expiration' is set to 'between 5 and 14 days'"
+  license: GPL-2.0-or-later
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - all
+  galaxy_tags:
+    - security
+    - wazuh
+    - hardening
+    - cis
+    - windows
+    - interactive_logon
+    - password
+    - expiration
+    - compliance
+    - remediation
+
+dependencies: []

@@ -1,0 +1,39 @@
+---
+# tasks file for win_domain_require_strong_key
+- name: Check current RequireStrongKey setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\System\CurrentControlSet\Services\Netlogon\Parameters"
+    $regName = "RequireStrongKey"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "0"
+    } else {
+      Write-Output $value
+    }
+  register: win_domain_require_strong_key_current_setting
+  changed_when: false
+
+- name: Display current RequireStrongKey setting
+  ansible.builtin.debug:
+    msg: >
+      Current RequireStrongKey: {{ win_domain_require_strong_key_current_setting.stdout | trim }}
+      (0=Disabled/Not Set - secure channel can use weak session keys, 1=Enabled - secure channel requires strong 128-bit session keys)
+
+- name: Set RequireStrongKey to Enabled
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Services\Netlogon\Parameters
+    name: RequireStrongKey
+    data: "{{ win_domain_require_strong_key_enabled_value }}"
+    type: dword
+  register: win_domain_require_strong_key_apply_setting
+  when: >
+    (win_domain_require_strong_key_current_setting.stdout | trim | int) != (win_domain_require_strong_key_enabled_value | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      RequireStrongKey is already set to {{ win_domain_require_strong_key_current_setting.stdout | trim }},
+      which meets the requirement (1 = Enabled - secure channel requires strong 128-bit session keys)
+  when: >
+    (win_domain_require_strong_key_current_setting.stdout | trim | int) == (win_domain_require_strong_key_enabled_value | int)

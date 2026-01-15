@@ -1,0 +1,25 @@
+---
+# meta file for win_audit_detailed_file_share
+galaxy_info:
+  author: twanus
+  description: Ensures 'Audit Detailed File Share' is set to include 'Failure' (CIS Benchmark 17.6.1, Wazuh check 26151)
+  company: twanus
+  license: MIT
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - all
+  galaxy_tags:
+    - windows
+    - security
+    - hardening
+    - audit
+    - file_share
+    - object_access
+    - wazuh
+    - cis
+    - compliance
+    - audit_policy
+
+dependencies: []

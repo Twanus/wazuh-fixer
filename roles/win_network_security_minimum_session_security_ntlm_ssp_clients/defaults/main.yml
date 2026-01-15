@@ -1,0 +1,6 @@
+---
+# defaults file for win_network_security_minimum_session_security_ntlm_ssp_clients
+# CIS Benchmark 2.3.11.9 (check 26058) requires 'Network security: Minimum session security for NTLM SSP based (including secure RPC) clients'
+# to be set to 'Require NTLMv2 session security, Require 128-bit encryption'
+# This value can be overridden in playbooks or inventory
+win_network_security_minimum_session_security_ntlm_ssp_clients_required_value: 537395200

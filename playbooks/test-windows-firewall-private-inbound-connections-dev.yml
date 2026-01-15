@@ -1,0 +1,18 @@
+---
+# Development test playbook - uses role directly from roles/ directory
+# Usage: ansible-playbook -i inventory.ini playbooks/test-windows-firewall-private-inbound-connections-dev.yml
+
+- name: Test Windows Firewall Private Inbound Connections Role (Development)
+  hosts: windows
+  gather_facts: true
+  become: false
+  # Override default if needed:
+  # vars:
+  #   win_firewall_private_inbound_connections_default_inbound_action: 1
+  roles:
+    # Use relative path for development/testing without installing collection
+    - role: ../roles/win_firewall_private_inbound_connections  # noqa role-name[path]
+  post_tasks:
+    - name: Verify role completed successfully
+      ansible.builtin.debug:
+        msg: "Role execution completed. Check the output above for Windows Firewall Private Profile Inbound Connections configuration."

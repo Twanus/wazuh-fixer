@@ -1,0 +1,6 @@
+---
+# defaults file for win_firewall_domain_inbound_connections
+# CIS Benchmark 9.1.2 (check 26117) requires 'Windows Firewall: Domain: Inbound connections' to be set to 'Block (default)'
+# This value can be overridden in playbooks or inventory
+# Value 0 = Allow, 1 = Block (default) (CIS requirement)
+win_firewall_domain_inbound_connections_default_inbound_action: 1

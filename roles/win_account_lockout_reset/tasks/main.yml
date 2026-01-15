@@ -1,0 +1,78 @@
+---
+# tasks file for win_account_lockout_reset
+- name: Check current reset account lockout counter setting
+  ansible.windows.win_shell: |
+    secedit /export /cfg $env:TEMP\secpol.cfg 2>&1 | Out-Null
+    $content = Get-Content $env:TEMP\secpol.cfg | Select-String "ResetLockoutCount"
+    Remove-Item $env:TEMP\secpol.cfg -ErrorAction SilentlyContinue
+    if ($content) {
+      $value = ($content -split '=')[1].Trim()
+      Write-Output $value
+    } else {
+      Write-Output "0"
+    }
+  register: win_account_lockout_reset_current_reset_lockout_count
+  changed_when: false
+
+- name: Display current reset account lockout counter setting
+  ansible.builtin.debug:
+    msg: "Current reset account lockout counter: {{ win_account_lockout_reset_current_reset_lockout_count.stdout | trim }} minutes"
+
+- name: Set reset account lockout counter using secedit
+  ansible.windows.win_shell: |
+    # Create INF file for secedit
+    # Ensure value is at least 15 minutes (CIS requirement)
+    $resetCount = {{ win_account_lockout_reset_reset_lockout_count }}
+    if ($resetCount -lt 15) {
+      Write-Error "Reset account lockout counter must be at least 15 minutes (CIS requirement)."
+      exit 1
+    }
+    $infLines = @(
+      "[Unicode]",
+      "Unicode=yes",
+      "[System Access]",
+      "ResetLockoutCount = $resetCount"
+    )
+    $infContent = $infLines -join "`r`n" + "`r`n"
+    
+    # Use C:\Windows\Temp which secedit can access
+    $tempDir = "C:\Windows\Temp"
+    if (-not (Test-Path $tempDir)) {
+      New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
+    }
+    $infPath = "$tempDir\reset_lockout_count.inf"
+    $dbPath = "$tempDir\secpol.sdb"
+    
+    # Clean up any existing files
+    Remove-Item $infPath -ErrorAction SilentlyContinue
+    Remove-Item $dbPath -ErrorAction SilentlyContinue
+    
+    # Write INF file
+    [System.IO.File]::WriteAllText($infPath, $infContent, [System.Text.Encoding]::ASCII)
+    
+    # Apply policy using secedit
+    $process = Start-Process -FilePath "secedit.exe" -ArgumentList "/configure", "/db", $dbPath, "/cfg", $infPath, "/quiet" -Wait -PassThru -NoNewWindow
+    $exitCode = $process.ExitCode
+    
+    # Cleanup
+    Start-Sleep -Seconds 1
+    Remove-Item $dbPath -ErrorAction SilentlyContinue
+    Remove-Item $infPath -ErrorAction SilentlyContinue
+    
+    if ($exitCode -eq 0) {
+      Write-Output "Reset account lockout counter policy set to $resetCount minutes successfully"
+    } else {
+      Write-Output "secedit completed with exit code: $exitCode"
+    }
+  register: win_account_lockout_reset_apply_policy
+  when: win_account_lockout_reset_current_reset_lockout_count.stdout | trim | int < win_account_lockout_reset_reset_lockout_count | int
+  changed_when: true
+  failed_when: false
+  notify: Win_account_lockout_reset_verify_reset_lockout_count
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      Reset account lockout counter is already set to {{ win_account_lockout_reset_current_reset_lockout_count.stdout | trim }} minutes,
+      which meets the requirement (>= {{ win_account_lockout_reset_reset_lockout_count }} minutes)
+  when: win_account_lockout_reset_current_reset_lockout_count.stdout | trim | int >= win_account_lockout_reset_reset_lockout_count | int

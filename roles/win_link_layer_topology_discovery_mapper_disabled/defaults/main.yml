@@ -1,0 +1,7 @@
+---
+# defaults file for win_link_layer_topology_discovery_mapper_disabled
+# CIS Benchmark 5.8 (check 26079) requires 'Link-Layer Topology Discovery Mapper (lltdsvc)' to be set to 'Disabled'
+# This value can be overridden in playbooks or inventory
+# Service Start values: 0=Boot, 1=System, 2=Auto, 3=Manual, 4=Disabled
+# Value 4 = Disabled (CIS requirement - Link-Layer Topology Discovery Mapper is disabled)
+win_link_layer_topology_discovery_mapper_disabled_start_value: 4

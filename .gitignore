@@ -1,0 +1,41 @@
+# Ansible
+*.retry
+.ansible/
+collections/
+
+# Inventory files with sensitive data
+inventory.yml
+inventory.ini
+hosts.yml
+hosts.ini
+*inventory*
+!inventory.example.*
+
+# Vault files (if used in the future)
+*.vault
+vault_pass.txt
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

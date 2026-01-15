@@ -1,0 +1,39 @@
+---
+# tasks file for win_network_security_restrict_ntlm_audit_incoming
+- name: Check current AuditReceivingNTLMTraffic setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0"
+    $regName = "AuditReceivingNTLMTraffic"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "0"
+    } else {
+      Write-Output $value
+    }
+  register: win_network_security_restrict_ntlm_audit_incoming_current_setting
+  changed_when: false
+
+- name: Display current AuditReceivingNTLMTraffic setting
+  ansible.builtin.debug:
+    msg: >
+      Current AuditReceivingNTLMTraffic: {{ win_network_security_restrict_ntlm_audit_incoming_current_setting.stdout | trim }}
+      (0=Disabled, 1=Enable auditing for domain accounts, 2=Enable auditing for all accounts)
+
+- name: Set AuditReceivingNTLMTraffic to Enable auditing for all accounts
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0
+    name: AuditReceivingNTLMTraffic
+    data: "{{ win_network_security_restrict_ntlm_audit_incoming_value }}"
+    type: dword
+  register: win_network_security_restrict_ntlm_audit_incoming_apply_setting
+  when: >
+    (win_network_security_restrict_ntlm_audit_incoming_current_setting.stdout | trim | int) != (win_network_security_restrict_ntlm_audit_incoming_value | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      AuditReceivingNTLMTraffic is already set to {{ win_network_security_restrict_ntlm_audit_incoming_current_setting.stdout | trim }},
+      which meets the requirement (2 = Enable auditing for all accounts)
+  when: >
+    (win_network_security_restrict_ntlm_audit_incoming_current_setting.stdout | trim | int) == (win_network_security_restrict_ntlm_audit_incoming_value | int)

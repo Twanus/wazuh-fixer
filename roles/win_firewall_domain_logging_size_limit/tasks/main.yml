@@ -1,0 +1,49 @@
+---
+# tasks file for win_firewall_domain_logging_size_limit
+- name: Check current LogFileSize setting for Domain Profile Logging
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\DomainProfile\Logging"
+    $regName = "LogFileSize"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "NOT_SET"
+    } else {
+      Write-Output $value
+    }
+  register: win_firewall_domain_logging_size_limit_current_setting
+  changed_when: false
+
+- name: Display current LogFileSize setting
+  ansible.builtin.debug:
+    msg: >
+      Current Domain Profile LogFileSize: {{ win_firewall_domain_logging_size_limit_current_setting.stdout | trim }} KB
+      (NOT_SET=Not configured, value must be >= 16384 KB per CIS requirement)
+
+- name: Ensure DomainProfile\Logging registry key exists
+  ansible.windows.win_regedit:
+    path: HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\DomainProfile\Logging
+    state: present
+  register: win_firewall_domain_logging_size_limit_ensure_key
+  when: win_firewall_domain_logging_size_limit_current_setting.stdout | trim == "NOT_SET"
+  changed_when: true
+
+- name: Set LogFileSize to required value (>= 16384 KB)
+  ansible.windows.win_regedit:
+    path: HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\DomainProfile\Logging
+    name: LogFileSize
+    data: "{{ win_firewall_domain_logging_size_limit_log_file_size }}"
+    type: dword
+  register: win_firewall_domain_logging_size_limit_apply_setting
+  when: >
+    (win_firewall_domain_logging_size_limit_current_setting.stdout | trim == "NOT_SET") or
+    ((win_firewall_domain_logging_size_limit_current_setting.stdout | trim | int) < (win_firewall_domain_logging_size_limit_log_file_size | int))
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      Domain Profile LogFileSize is already set to {{ win_firewall_domain_logging_size_limit_current_setting.stdout | trim }} KB,
+      which meets the requirement (>= 16384 KB)
+  when: >
+    (win_firewall_domain_logging_size_limit_current_setting.stdout | trim != "NOT_SET") and
+    ((win_firewall_domain_logging_size_limit_current_setting.stdout | trim | int) >= (win_firewall_domain_logging_size_limit_log_file_size | int))

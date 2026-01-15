@@ -1,0 +1,21 @@
+---
+galaxy_info:
+  author: Antoon Vereecken
+  description: Remediate CIS Benchmark 1.1.4 (check 26003) - Ensure 'Minimum password length' is set to '14 or more characters'
+  license: GPL-2.0-or-later
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - all
+  galaxy_tags:
+    - security
+    - wazuh
+    - hardening
+    - cis
+    - windows
+    - password
+    - compliance
+    - remediation
+
+dependencies: []

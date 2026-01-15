@@ -1,0 +1,39 @@
+---
+# tasks file for win_uac_run_all_admins_in_admin_approval_mode
+- name: Check current EnableLUA setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System"
+    $regName = "EnableLUA"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "0"
+    } else {
+      Write-Output $value
+    }
+  register: win_uac_run_all_admins_in_admin_approval_mode_current_setting
+  changed_when: false
+
+- name: Display current EnableLUA setting
+  ansible.builtin.debug:
+    msg: >
+      Current EnableLUA: {{ win_uac_run_all_admins_in_admin_approval_mode_current_setting.stdout | trim }}
+      (0=Disabled - UAC is disabled and security benefits are not present, 1=Enabled - UAC is enabled and Admin Approval Mode is active for all administrators [recommended])
+
+- name: Set EnableLUA to Enabled
+  ansible.windows.win_regedit:
+    path: HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System
+    name: EnableLUA
+    data: "{{ win_uac_run_all_admins_in_admin_approval_mode_enable_lua }}"
+    type: dword
+  register: win_uac_run_all_admins_in_admin_approval_mode_apply_setting
+  when: >
+    (win_uac_run_all_admins_in_admin_approval_mode_current_setting.stdout | trim | int) != (win_uac_run_all_admins_in_admin_approval_mode_enable_lua | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      EnableLUA is already set to {{ win_uac_run_all_admins_in_admin_approval_mode_current_setting.stdout | trim }},
+      which meets the requirement (1 = Enabled - UAC is enabled and Admin Approval Mode is active for all administrators)
+  when: >
+    (win_uac_run_all_admins_in_admin_approval_mode_current_setting.stdout | trim | int) == (win_uac_run_all_admins_in_admin_approval_mode_enable_lua | int)

@@ -1,0 +1,14 @@
+---
+# Test playbook for win_domain_encrypt_secure_channel_when_possible role (Development)
+# Usage: ansible-playbook -i ../inventory.ini playbooks/test-windows-domain-encrypt-secure-channel-when-possible-dev.yml
+
+- name: Test Windows Domain Encrypt Secure Channel When Possible Role (Development)
+  hosts: windows
+  gather_facts: true
+  become: false
+  roles:
+    - role: ../roles/win_domain_encrypt_secure_channel_when_possible  # noqa role-name[path]
+  post_tasks:
+    - name: Verify role completed successfully
+      ansible.builtin.debug:
+        msg: "Role execution completed. Check the output above for SealSecureChannel configuration."

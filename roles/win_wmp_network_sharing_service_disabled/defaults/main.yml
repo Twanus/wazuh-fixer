@@ -1,0 +1,7 @@
+---
+# defaults file for win_wmp_network_sharing_service_disabled
+# CIS Benchmark 5.35 (check 26106) requires 'Windows Media Player Network Sharing Service (WMPNetworkSvc)' to be set to 'Disabled' or 'Not Installed'
+# This value can be overridden in playbooks or inventory
+# Service Start values: 0=Boot, 1=System, 2=Auto, 3=Manual, 4=Disabled
+# Value 4 = Disabled (CIS requirement - Windows Media Player Network Sharing Service is disabled)
+win_wmp_network_sharing_service_disabled_start_value: 4

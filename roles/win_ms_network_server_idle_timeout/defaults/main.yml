@@ -1,0 +1,7 @@
+---
+# defaults file for win_ms_network_server_idle_timeout
+# CIS Benchmark 2.3.9.1 (check 26034) requires 'Microsoft network server: Amount of idle time required before suspending session' to be set to '15 or fewer minute(s)'
+# This value can be overridden in playbooks or inventory
+# Value must be between 1 and 15 minutes (CIS requirement)
+# Default value is 15 minutes (maximum recommended, balances security with usability)
+win_ms_network_server_idle_timeout_idle_timeout_minutes: 15

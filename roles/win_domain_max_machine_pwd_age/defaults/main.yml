@@ -1,0 +1,6 @@
+---
+# defaults file for win_domain_max_machine_pwd_age
+# CIS Benchmark 2.3.6.5 (check 26020) requires 'Domain member: Maximum machine account password age' to be set to '30 or fewer days, but not 0'
+# This value can be overridden in playbooks or inventory
+# Value must be between 1 and 30 days (CIS requirement)
+win_domain_max_machine_pwd_age_maximum_password_age: 30

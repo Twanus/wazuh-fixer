@@ -1,0 +1,16 @@
+---
+# handlers file for win_pwd_hist_size
+- name: Win_pwd_hist_size_verify_password_history
+  ansible.windows.win_shell: |
+    Start-Sleep -Seconds 2
+    secedit /export /cfg $env:TEMP\secpol.cfg 2>&1 | Out-Null
+    $content = Get-Content $env:TEMP\secpol.cfg | Select-String "PasswordHistorySize"
+    Remove-Item $env:TEMP\secpol.cfg -ErrorAction SilentlyContinue
+    if ($content) {
+      $value = ($content -split '=')[1].Trim()
+      Write-Output $value
+    } else {
+      Write-Output "0"
+    }
+  register: win_pwd_hist_size_verify_password_history
+  changed_when: false

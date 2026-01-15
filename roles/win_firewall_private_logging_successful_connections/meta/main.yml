@@ -1,0 +1,24 @@
+---
+galaxy_info:
+  author: Antoon Vereecken
+  description: "Remediate CIS Benchmark 9.2.7 (check 26129) - Ensure 'Windows Firewall: Private: Logging: Log successful connections' is set to 'Yes'"
+  license: GPL-2.0-or-later
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - all
+  galaxy_tags:
+    - security
+    - wazuh
+    - hardening
+    - cis
+    - windows
+    - firewall
+    - private
+    - logging
+    - network
+    - compliance
+    - remediation
+
+dependencies: []

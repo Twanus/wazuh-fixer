@@ -1,0 +1,43 @@
+---
+# tasks file for win_interactive_logon_password_expiry_warning
+- name: Check current PasswordExpiryWarning setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon"
+    $regName = "PasswordExpiryWarning"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "0"
+    } else {
+      Write-Output $value
+    }
+  register: win_interactive_logon_password_expiry_warning_current_setting
+  changed_when: false
+
+- name: Display current PasswordExpiryWarning setting
+  ansible.builtin.debug:
+    msg: >
+      Current PasswordExpiryWarning: {{ win_interactive_logon_password_expiry_warning_current_setting.stdout | trim }} days
+      (0=Not set - users are not warned before password expiration, 5-14=Configured - users are warned specified days before password expiration)
+
+- name: Set PasswordExpiryWarning to required value
+  ansible.windows.win_regedit:
+    path: HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon
+    name: PasswordExpiryWarning
+    data: "{{ win_interactive_logon_password_expiry_warning_warning_days }}"
+    type: dword
+  register: win_interactive_logon_password_expiry_warning_apply_setting
+  when: >
+    (win_interactive_logon_password_expiry_warning_current_setting.stdout | trim | int) < 5 or
+    (win_interactive_logon_password_expiry_warning_current_setting.stdout | trim | int) > 14 or
+    (win_interactive_logon_password_expiry_warning_current_setting.stdout | trim | int) != (win_interactive_logon_password_expiry_warning_warning_days | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      PasswordExpiryWarning is already set to {{ win_interactive_logon_password_expiry_warning_current_setting.stdout | trim }} days,
+      which meets the requirement (between 5 and 14 days)
+  when: >
+    (win_interactive_logon_password_expiry_warning_current_setting.stdout | trim | int) >= 5 and
+    (win_interactive_logon_password_expiry_warning_current_setting.stdout | trim | int) <= 14 and
+    (win_interactive_logon_password_expiry_warning_current_setting.stdout | trim | int) == (win_interactive_logon_password_expiry_warning_warning_days | int)

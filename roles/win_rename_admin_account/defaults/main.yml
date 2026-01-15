@@ -1,0 +1,7 @@
+---
+# defaults file for win_rename_admin_account
+# CIS Benchmark 2.3.1.4 (check 26011) requires 'Accounts: Rename administrator account' to be configured
+# The administrator account should not be named one of the well-known names (Admin, Administrator, etc.)
+# This value can be overridden in playbooks or inventory
+# Important: Choose a name that does not denote administrative or elevated access accounts
+win_rename_admin_account_new_name: "LocalAdmin"

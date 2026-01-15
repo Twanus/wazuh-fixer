@@ -1,0 +1,9 @@
+---
+# defaults file for win_network_access_remotely_accessible_registry_paths
+# CIS Benchmark 2.3.10.7 (check 26044) requires 'Network access: Remotely accessible registry paths' to be configured
+# This value can be overridden in playbooks or inventory
+# Default paths are the recommended paths from CIS Benchmark
+win_network_access_remotely_accessible_registry_paths_allowed_paths:
+  - 'System\CurrentControlSet\Control\ProductOptions'
+  - 'System\CurrentControlSet\Control\Server Applications'
+  - 'Software\Microsoft\Windows NT\CurrentVersion'

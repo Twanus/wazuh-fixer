@@ -1,0 +1,14 @@
+---
+# Test playbook for win_ms_network_server_disconnect_logon_hours role (Development)
+# Usage: ansible-playbook -i ../inventory.ini playbooks/test-windows-ms-network-server-disconnect-logon-hours-dev.yml
+
+- name: Test Windows Microsoft Network Server Disconnect Logon Hours Role (Development)
+  hosts: windows
+  gather_facts: true
+  become: false
+  roles:
+    - role: ../roles/win_ms_network_server_disconnect_logon_hours  # noqa role-name[path]
+  post_tasks:
+    - name: Verify role completed successfully
+      ansible.builtin.debug:
+        msg: "Role execution completed. Check the output above for EnableForcedLogOff configuration."

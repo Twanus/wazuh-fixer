@@ -1,0 +1,6 @@
+---
+# defaults file for win_firewall_domain_logging_name
+# CIS Benchmark 9.1.4 (check 26119) requires 'Windows Firewall: Domain: Logging: Name' to be set to '%SystemRoot%\System32\logfiles\firewall\domainfw.log'
+# This value can be overridden in playbooks or inventory
+# The recommended state for this setting is: %SystemRoot%\System32\logfiles\firewall\domainfw.log
+win_firewall_domain_logging_name_log_file_path: '%SystemRoot%\System32\logfiles\firewall\domainfw.log'

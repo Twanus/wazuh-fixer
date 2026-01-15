@@ -1,0 +1,14 @@
+---
+# Test playbook for win_domain_max_machine_pwd_age role (Development)
+# Usage: ansible-playbook -i ../inventory.ini playbooks/test-windows-domain-max-machine-pwd-age-dev.yml
+
+- name: Test Windows Domain Maximum Machine Password Age Role (Development)
+  hosts: windows
+  gather_facts: true
+  become: false
+  roles:
+    - role: ../roles/win_domain_max_machine_pwd_age  # noqa role-name[path]
+  post_tasks:
+    - name: Verify role completed successfully
+      ansible.builtin.debug:
+        msg: "Role execution completed. Check the output above for MaximumPasswordAge configuration."

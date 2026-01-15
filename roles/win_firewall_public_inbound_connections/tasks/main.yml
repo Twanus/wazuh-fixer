@@ -1,0 +1,47 @@
+---
+# tasks file for win_firewall_public_inbound_connections
+- name: Check current DefaultInboundAction setting for Public Profile
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile"
+    $regName = "DefaultInboundAction"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "NOT_SET"
+    } else {
+      Write-Output $value
+    }
+  register: win_firewall_public_inbound_connections_current_setting
+  changed_when: false
+
+- name: Display current DefaultInboundAction setting
+  ansible.builtin.debug:
+    msg: "Current Public Profile DefaultInboundAction: {{ win_firewall_public_inbound_connections_current_setting.stdout | trim }} (0=Allow, 1=Block (default), NOT_SET=Not configured)"
+
+- name: Ensure PublicProfile registry key exists
+  ansible.windows.win_regedit:
+    path: HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile
+    state: present
+  register: win_firewall_public_inbound_connections_ensure_key
+  when: win_firewall_public_inbound_connections_current_setting.stdout | trim == "NOT_SET"
+  changed_when: true
+
+- name: Set DefaultInboundAction to Block (default) for Public Profile
+  ansible.windows.win_regedit:
+    path: HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile
+    name: DefaultInboundAction
+    data: "{{ win_firewall_public_inbound_connections_default_inbound_action }}"
+    type: dword
+  register: win_firewall_public_inbound_connections_apply_setting
+  when: >
+    (win_firewall_public_inbound_connections_current_setting.stdout | trim == "NOT_SET") or
+    ((win_firewall_public_inbound_connections_current_setting.stdout | trim | int) != (win_firewall_public_inbound_connections_default_inbound_action | int))
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      Public Profile DefaultInboundAction is already set to {{ win_firewall_public_inbound_connections_current_setting.stdout | trim }},
+      which meets the requirement (1 = Block (default))
+  when: >
+    (win_firewall_public_inbound_connections_current_setting.stdout | trim != "NOT_SET") and
+    ((win_firewall_public_inbound_connections_current_setting.stdout | trim | int) == (win_firewall_public_inbound_connections_default_inbound_action | int))

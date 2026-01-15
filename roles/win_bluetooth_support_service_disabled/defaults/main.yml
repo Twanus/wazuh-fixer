@@ -1,0 +1,7 @@
+---
+# defaults file for win_bluetooth_support_service_disabled
+# CIS Benchmark 5.2 (check 26073) requires 'Bluetooth Support Service (bthserv)' to be set to 'Disabled'
+# This value can be overridden in playbooks or inventory
+# Value 4 = Disabled (CIS requirement)
+# Windows service Start values: 0=Boot, 1=System, 2=Auto, 3=Manual, 4=Disabled
+win_bluetooth_support_service_disabled_start_value: 4

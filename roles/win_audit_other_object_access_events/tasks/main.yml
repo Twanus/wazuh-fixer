@@ -1,0 +1,43 @@
+---
+# tasks file for win_audit_other_object_access_events
+- name: Check current Other Object Access Events audit policy setting
+  ansible.windows.win_shell: |
+    $output = auditpol.exe /get /subcategory:"Other Object Access Events" 2>&1
+    if ($LASTEXITCODE -ne 0) {
+      Write-Error "Failed to get audit policy. Exit code: $LASTEXITCODE"
+      Write-Output $output
+      exit $LASTEXITCODE
+    }
+    Write-Output $output
+  register: win_audit_other_object_access_events_current_setting
+  changed_when: false
+
+- name: Display current Other Object Access Events audit policy setting
+  ansible.builtin.debug:
+    msg: >
+      Current Other Object Access Events audit policy:
+      {{ win_audit_other_object_access_events_current_setting.stdout_lines | join('\n') }}
+
+- name: Check if Other Object Access Events is set to Success and Failure
+  ansible.builtin.set_fact:
+    win_audit_other_object_access_events_is_configured: >
+      {{ 'Success and Failure' in win_audit_other_object_access_events_current_setting.stdout }}
+
+- name: Set Other Object Access Events audit policy to Success and Failure
+  ansible.windows.win_shell: |
+    auditpol.exe /set /subcategory:"Other Object Access Events" /success:enable /failure:enable
+    if ($LASTEXITCODE -ne 0) {
+      Write-Error "Failed to set audit policy. Exit code: $LASTEXITCODE"
+      exit $LASTEXITCODE
+    }
+    Write-Output "Successfully set Other Object Access Events audit policy to Success and Failure"
+  register: win_audit_other_object_access_events_apply_setting
+  when: not win_audit_other_object_access_events_is_configured
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      Other Object Access Events audit policy is already set to 'Success and Failure',
+      which meets the CIS Benchmark requirement (17.6.3)
+  when: win_audit_other_object_access_events_is_configured

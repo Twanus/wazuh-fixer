@@ -1,0 +1,5 @@
+---
+# defaults file for win_audit_file_share
+# CIS Benchmark 17.6.2 (check 26152) requires 'Audit File Share' to be set to 'Success and Failure'
+# This role uses auditpol.exe to configure the audit policy subcategory
+# The required setting is "Success and Failure" which enables both success and failure auditing

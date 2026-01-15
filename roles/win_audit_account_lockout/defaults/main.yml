@@ -1,0 +1,4 @@
+---
+# defaults file for win_audit_account_lockout
+# This role uses auditpol.exe to configure the audit policy subcategory
+# The setting is configured via auditpol.exe /set /subcategory:"Account Lockout" /failure:enable

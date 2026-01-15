@@ -1,0 +1,41 @@
+---
+# tasks file for win_upnp_device_host_disabled
+- name: Check current UPnP Device Host Start setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\SYSTEM\CurrentControlSet\Services\upnphost"
+    $regName = "Start"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "NOT_SET"
+    } else {
+      Write-Output $value
+    }
+  register: win_upnp_device_host_disabled_current_setting
+  changed_when: false
+
+- name: Display current UPnP Device Host Start setting
+  ansible.builtin.debug:
+    msg: >
+      Current UPnP Device Host Start: {{ win_upnp_device_host_disabled_current_setting.stdout | trim }}
+      (0=Boot, 1=System, 2=Auto, 3=Manual, 4=Disabled [recommended])
+
+- name: Set UPnP Device Host Start to Disabled
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Services\upnphost
+    name: Start
+    data: "{{ win_upnp_device_host_disabled_start_value }}"
+    type: dword
+  register: win_upnp_device_host_disabled_apply_setting
+  when: >
+    (win_upnp_device_host_disabled_current_setting.stdout | trim) == "NOT_SET" or
+    (win_upnp_device_host_disabled_current_setting.stdout | trim | int) != (win_upnp_device_host_disabled_start_value | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      UPnP Device Host Start is already set to {{ win_upnp_device_host_disabled_current_setting.stdout | trim }},
+      which meets the requirement (4 = Disabled)
+  when: >
+    (win_upnp_device_host_disabled_current_setting.stdout | trim) != "NOT_SET" and
+    (win_upnp_device_host_disabled_current_setting.stdout | trim | int) == (win_upnp_device_host_disabled_start_value | int)

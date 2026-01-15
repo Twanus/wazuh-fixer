@@ -1,0 +1,6 @@
+---
+# defaults file for win_force_audit_subcategory
+# CIS Benchmark 2.3.2.1 (check 26013) requires 'Audit: Force audit policy subcategory settings (Windows Vista or later) to override audit policy category settings' to be set to 'Enabled'
+# This value can be overridden in playbooks or inventory
+# Value 1 = Enabled (CIS requirement)
+win_force_audit_subcategory_enabled_value: 1

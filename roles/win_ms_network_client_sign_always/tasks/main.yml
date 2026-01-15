@@ -1,0 +1,39 @@
+---
+# tasks file for win_ms_network_client_sign_always
+- name: Check current RequireSecuritySignature setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\System\CurrentControlSet\Services\LanmanWorkstation\Parameters"
+    $regName = "RequireSecuritySignature"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "0"
+    } else {
+      Write-Output $value
+    }
+  register: win_ms_network_client_sign_always_current_setting
+  changed_when: false
+
+- name: Display current RequireSecuritySignature setting
+  ansible.builtin.debug:
+    msg: >
+      Current RequireSecuritySignature: {{ win_ms_network_client_sign_always_current_setting.stdout | trim }}
+      (0=Disabled - SMB client packet signing not required, 1=Enabled - SMB client packet signing required)
+
+- name: Set RequireSecuritySignature to Enabled
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Services\LanmanWorkstation\Parameters
+    name: RequireSecuritySignature
+    data: "{{ win_ms_network_client_sign_always_enabled_value }}"
+    type: dword
+  register: win_ms_network_client_sign_always_apply_setting
+  when: >
+    (win_ms_network_client_sign_always_current_setting.stdout | trim | int) != (win_ms_network_client_sign_always_enabled_value | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      RequireSecuritySignature is already set to {{ win_ms_network_client_sign_always_current_setting.stdout | trim }},
+      which meets the requirement (1 = Enabled - SMB client packet signing required)
+  when: >
+    (win_ms_network_client_sign_always_current_setting.stdout | trim | int) == (win_ms_network_client_sign_always_enabled_value | int)

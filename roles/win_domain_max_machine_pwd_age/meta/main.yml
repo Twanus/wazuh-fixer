@@ -1,0 +1,23 @@
+---
+galaxy_info:
+  author: Antoon Vereecken
+  description: "Remediate CIS Benchmark 2.3.6.5 (check 26020) - Ensure 'Domain member: Maximum machine account password age' is set to '30 or fewer days, but not 0'"
+  license: GPL-2.0-or-later
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - all
+  galaxy_tags:
+    - security
+    - wazuh
+    - hardening
+    - cis
+    - windows
+    - domain
+    - machine_account
+    - password
+    - compliance
+    - remediation
+
+dependencies: []

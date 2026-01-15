@@ -1,0 +1,24 @@
+---
+galaxy_info:
+  author: Antoon Vereecken
+  description: "Remediate CIS Benchmark 2.3.9.3 (check 26036) - Ensure 'Microsoft network server: Digitally sign communications (if client agrees)' is set to 'Enabled'"
+  license: GPL-2.0-or-later
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - all
+  galaxy_tags:
+    - security
+    - wazuh
+    - hardening
+    - cis
+    - windows
+    - network
+    - smb
+    - signing
+    - server
+    - compliance
+    - remediation
+
+dependencies: []

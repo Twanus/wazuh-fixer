@@ -1,0 +1,14 @@
+---
+# Test playbook for win_print_spooler_service_disabled role (Development)
+# Usage: ansible-playbook -i inventory.ini playbooks/test-windows-print-spooler-service-disabled-dev.yml
+
+- name: Test Windows Print Spooler Service Disabled Role (Development)
+  hosts: windows
+  gather_facts: true
+  become: false
+  roles:
+    - role: ../roles/win_print_spooler_service_disabled  # noqa role-name[path]
+  post_tasks:
+    - name: Verify role completed successfully
+      ansible.builtin.debug:
+        msg: "Role execution completed. Check the output above for Print Spooler Start configuration."

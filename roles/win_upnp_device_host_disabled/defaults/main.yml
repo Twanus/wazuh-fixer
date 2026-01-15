@@ -1,0 +1,7 @@
+---
+# defaults file for win_upnp_device_host_disabled
+# CIS Benchmark 5.31 (check 26102) requires 'UPnP Device Host (upnphost)' to be set to 'Disabled'
+# This value can be overridden in playbooks or inventory
+# Value 4 = Disabled (CIS requirement)
+# Windows service Start values: 0=Boot, 1=System, 2=Auto, 3=Manual, 4=Disabled
+win_upnp_device_host_disabled_start_value: 4

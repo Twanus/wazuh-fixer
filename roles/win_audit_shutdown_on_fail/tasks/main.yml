@@ -1,0 +1,39 @@
+---
+# tasks file for win_audit_shutdown_on_fail
+- name: Check current CrashOnAuditFail setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\System\CurrentControlSet\Control\Lsa"
+    $regName = "CrashOnAuditFail"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "0"
+    } else {
+      Write-Output $value
+    }
+  register: win_audit_shutdown_on_fail_current_setting
+  changed_when: false
+
+- name: Display current CrashOnAuditFail setting
+  ansible.builtin.debug:
+    msg: >
+      Current CrashOnAuditFail: {{ win_audit_shutdown_on_fail_current_setting.stdout | trim }}
+      (0=Disabled - system will not shut down if unable to log security audits, 1=Enabled - system will shut down if unable to log security audits)
+
+- name: Set CrashOnAuditFail to Disabled
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Control\Lsa
+    name: CrashOnAuditFail
+    data: "{{ win_audit_shutdown_on_fail_disabled_value }}"
+    type: dword
+  register: win_audit_shutdown_on_fail_apply_setting
+  when: >
+    (win_audit_shutdown_on_fail_current_setting.stdout | trim | int) != (win_audit_shutdown_on_fail_disabled_value | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      CrashOnAuditFail is already set to {{ win_audit_shutdown_on_fail_current_setting.stdout | trim }},
+      which meets the requirement (0 = Disabled - system will not shut down if unable to log security audits)
+  when: >
+    (win_audit_shutdown_on_fail_current_setting.stdout | trim | int) == (win_audit_shutdown_on_fail_disabled_value | int)

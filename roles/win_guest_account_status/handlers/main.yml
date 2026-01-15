@@ -1,0 +1,17 @@
+---
+# handlers file for win_guest_account_status
+- name: Win_guest_account_status_verify_status
+  ansible.windows.win_shell: |
+    Start-Sleep -Seconds 2
+    $guest = Get-CimInstance -Query "SELECT * FROM Win32_UserAccount WHERE LocalAccount = TRUE AND SID LIKE 'S-1-5-21-%-501'" -ErrorAction SilentlyContinue
+    if ($guest) {
+      if ($guest.Disabled) {
+        Write-Output "Disabled"
+      } else {
+        Write-Output "Enabled"
+      }
+    } else {
+      Write-Output "NotFound"
+    }
+  register: win_guest_account_status_verify_status
+  changed_when: false

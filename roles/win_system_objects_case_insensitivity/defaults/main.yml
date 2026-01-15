@@ -1,0 +1,6 @@
+---
+# defaults file for win_system_objects_case_insensitivity
+# CIS Benchmark 2.3.15.1 (check 26062) requires 'System objects: Require case insensitivity for non-Windows subsystems' to be set to 'Enabled'
+# This value can be overridden in playbooks or inventory
+# Value 1 = Enabled (CIS requirement)
+win_system_objects_case_insensitivity_enabled_value: 1

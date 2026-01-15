@@ -1,0 +1,6 @@
+---
+# defaults file for win_network_security_ldap_client_signing
+# CIS Benchmark 2.3.11.8 (check 26057) requires 'Network security: LDAP client signing requirements' to be set to 'Negotiate signing' (1) or higher
+# This value can be overridden in playbooks or inventory
+# Valid values: 0=None (not compliant), 1=Negotiate signing (minimum compliant), 2=Require signing (more secure)
+win_network_security_ldap_client_signing_value: 1

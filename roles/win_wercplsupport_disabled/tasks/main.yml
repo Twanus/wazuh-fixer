@@ -1,0 +1,66 @@
+---
+# tasks file for win_wercplsupport_disabled
+- name: Check if Problem Reports and Solutions Control Panel Support service registry key exists and get Start setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\SYSTEM\CurrentControlSet\Services\wercplsupport"
+    $regName = "Start"
+    if (Test-Path -Path $regPath) {
+      $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+      if ($null -eq $value) {
+        Write-Output "NOT_SET"
+      } else {
+        Write-Output $value
+      }
+    } else {
+      Write-Output "KEY_NOT_EXISTS"
+    }
+  register: win_wercplsupport_disabled_current_setting
+  changed_when: false
+
+- name: Display current Problem Reports and Solutions Control Panel Support service status
+  ansible.builtin.debug:
+    msg: >
+      Current Problem Reports and Solutions Control Panel Support service: {{ win_wercplsupport_disabled_current_setting.stdout | trim }}
+      (KEY_NOT_EXISTS=Service not installed [compliant], NOT_SET=Registry key exists but Start value not set, 0=Boot, 1=System, 2=Auto, 3=Manual, 4=Disabled [recommended])
+
+- name: Set Problem Reports and Solutions Control Panel Support Service Start to Disabled
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Services\wercplsupport
+    name: Start
+    data: "{{ win_wercplsupport_disabled_start_value }}"
+    type: dword
+  register: win_wercplsupport_disabled_apply_setting
+  when: >
+    (win_wercplsupport_disabled_current_setting.stdout | trim) != "KEY_NOT_EXISTS" and
+    (win_wercplsupport_disabled_current_setting.stdout | trim) != "NOT_SET" and
+    (win_wercplsupport_disabled_current_setting.stdout | trim | int) != (win_wercplsupport_disabled_start_value | int)
+  changed_when: true
+
+- name: Set Problem Reports and Solutions Control Panel Support Service Start to Disabled (when NOT_SET)
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Services\wercplsupport
+    name: Start
+    data: "{{ win_wercplsupport_disabled_start_value }}"
+    type: dword
+  register: win_wercplsupport_disabled_apply_setting_not_set
+  when: >
+    (win_wercplsupport_disabled_current_setting.stdout | trim) == "NOT_SET"
+  changed_when: true
+
+- name: Report if service is not installed (compliant)
+  ansible.builtin.debug:
+    msg: >
+      Problem Reports and Solutions Control Panel Support service is not installed (registry key does not exist),
+      which meets the requirement (Disabled)
+  when: >
+    (win_wercplsupport_disabled_current_setting.stdout | trim) == "KEY_NOT_EXISTS"
+
+- name: Report if service is already disabled (compliant)
+  ansible.builtin.debug:
+    msg: >
+      Problem Reports and Solutions Control Panel Support service Start is already set to {{ win_wercplsupport_disabled_current_setting.stdout | trim }},
+      which meets the requirement (4 = Disabled)
+  when: >
+    (win_wercplsupport_disabled_current_setting.stdout | trim) != "KEY_NOT_EXISTS" and
+    (win_wercplsupport_disabled_current_setting.stdout | trim) != "NOT_SET" and
+    (win_wercplsupport_disabled_current_setting.stdout | trim | int) == (win_wercplsupport_disabled_start_value | int)

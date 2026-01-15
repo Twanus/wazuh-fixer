@@ -1,0 +1,7 @@
+---
+# defaults file for win_windows_push_notifications_system_service_disabled
+# CIS Benchmark 5.37 (check 26108) requires 'Windows Push Notifications System Service (WpnService)' to be set to 'Disabled'
+# This value can be overridden in playbooks or inventory
+# Service Start values: 0=Boot, 1=System, 2=Auto, 3=Manual, 4=Disabled
+# Value 4 = Disabled (CIS requirement - Windows Push Notifications System Service is disabled)
+win_windows_push_notifications_system_service_disabled_start_value: 4

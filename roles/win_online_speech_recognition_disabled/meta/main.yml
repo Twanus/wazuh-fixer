@@ -1,0 +1,23 @@
+---
+galaxy_info:
+  author: Antoon Vereecken
+  description: "Remediate CIS Benchmark 18.1.2.2 (check 26168) - Ensure 'Allow users to enable online speech recognition services' is set to 'Disabled'"
+  license: GPL-2.0-or-later
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - all
+  galaxy_tags:
+    - security
+    - wazuh
+    - hardening
+    - cis
+    - windows
+    - privacy
+    - speech_recognition
+    - input_personalization
+    - compliance
+    - remediation
+
+dependencies: []

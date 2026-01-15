@@ -1,0 +1,47 @@
+---
+# tasks file for win_firewall_public_apply_local_connection_security_rules
+- name: Check current AllowLocalIPsecPolicyMerge setting for Public Profile
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile"
+    $regName = "AllowLocalIPsecPolicyMerge"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "NOT_SET"
+    } else {
+      Write-Output $value
+    }
+  register: win_firewall_public_apply_local_connection_security_rules_current_setting
+  changed_when: false
+
+- name: Display current AllowLocalIPsecPolicyMerge setting
+  ansible.builtin.debug:
+    msg: "Current Public Profile AllowLocalIPsecPolicyMerge: {{ win_firewall_public_apply_local_connection_security_rules_current_setting.stdout | trim }} (0=No (CIS requirement), 1=Yes (allow local connection security rules), NOT_SET=Not configured)"
+
+- name: Ensure PublicProfile registry key exists
+  ansible.windows.win_regedit:
+    path: HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile
+    state: present
+  register: win_firewall_public_apply_local_connection_security_rules_ensure_key
+  when: win_firewall_public_apply_local_connection_security_rules_current_setting.stdout | trim == "NOT_SET"
+  changed_when: true
+
+- name: Set AllowLocalIPsecPolicyMerge to No for Public Profile
+  ansible.windows.win_regedit:
+    path: HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile
+    name: AllowLocalIPsecPolicyMerge
+    data: "{{ win_firewall_public_apply_local_connection_security_rules_allow_local_ipsec_policy_merge }}"
+    type: dword
+  register: win_firewall_public_apply_local_connection_security_rules_apply_setting
+  when: >
+    (win_firewall_public_apply_local_connection_security_rules_current_setting.stdout | trim == "NOT_SET") or
+    ((win_firewall_public_apply_local_connection_security_rules_current_setting.stdout | trim | int) != (win_firewall_public_apply_local_connection_security_rules_allow_local_ipsec_policy_merge | int))
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      Public Profile AllowLocalIPsecPolicyMerge is already set to {{ win_firewall_public_apply_local_connection_security_rules_current_setting.stdout | trim }},
+      which meets the requirement (0 = No, do not apply local connection security rules)
+  when: >
+    (win_firewall_public_apply_local_connection_security_rules_current_setting.stdout | trim != "NOT_SET") and
+    ((win_firewall_public_apply_local_connection_security_rules_current_setting.stdout | trim | int) == (win_firewall_public_apply_local_connection_security_rules_allow_local_ipsec_policy_merge | int))

@@ -1,0 +1,4 @@
+---
+# defaults file for win_audit_detailed_file_share
+# This role uses auditpol.exe to configure the audit policy subcategory
+# The setting is configured via auditpol.exe /set /subcategory:"Detailed File Share" /failure:enable

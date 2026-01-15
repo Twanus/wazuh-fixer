@@ -1,0 +1,7 @@
+---
+# defaults file for win_interactive_logon_password_expiry_warning
+# CIS Benchmark 2.3.7.8 (check 26029) requires 'Interactive logon: Prompt user to change password before expiration' to be set to 'between 5 and 14 days'
+# This value can be overridden in playbooks or inventory
+# Value must be between 5 and 14 days (CIS requirement)
+# Default value is 14 days (maximum recommended, provides maximum warning time)
+win_interactive_logon_password_expiry_warning_warning_days: 14

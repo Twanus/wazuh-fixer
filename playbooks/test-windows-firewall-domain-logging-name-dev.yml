@@ -1,0 +1,14 @@
+---
+# Test playbook for win_firewall_domain_logging_name role (Development)
+# Usage: ansible-playbook -i inventory.ini playbooks/test-windows-firewall-domain-logging-name-dev.yml
+
+- name: Test Windows Firewall Domain Profile Logging Name Role (Development)
+  hosts: windows
+  gather_facts: true
+  become: false
+  roles:
+    - role: ../roles/win_firewall_domain_logging_name  # noqa role-name[path]
+  post_tasks:
+    - name: Verify role completed successfully
+      ansible.builtin.debug:
+        msg: "Role execution completed. Check the output above for configuration."

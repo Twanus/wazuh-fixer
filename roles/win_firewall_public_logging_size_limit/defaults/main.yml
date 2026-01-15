@@ -1,0 +1,6 @@
+---
+# defaults file for win_firewall_public_logging_size_limit
+# CIS Benchmark 9.3.7 (check 26136) requires 'Windows Firewall: Public: Logging: Size limit (KB)' to be set to '16,384 KB or greater'
+# This value can be overridden in playbooks or inventory
+# Value must be >= 16384 KB (CIS requirement)
+win_firewall_public_logging_size_limit_log_file_size: 16384

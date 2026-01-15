@@ -1,0 +1,23 @@
+---
+galaxy_info:
+  author: Antoon Vereecken
+  description: "Remediate CIS Benchmark 2.3.15.1 (check 26062) - Ensure 'System objects: Require case insensitivity for non-Windows subsystems' is set to 'Enabled'"
+  license: GPL-2.0-or-later
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - all
+  galaxy_tags:
+    - security
+    - wazuh
+    - hardening
+    - cis
+    - windows
+    - system_objects
+    - case_insensitivity
+    - posix
+    - compliance
+    - remediation
+
+dependencies: []

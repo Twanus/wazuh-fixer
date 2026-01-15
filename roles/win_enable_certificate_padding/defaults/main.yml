@@ -1,0 +1,6 @@
+---
+# defaults file for win_enable_certificate_padding
+# CIS Benchmark 18.4.5 (check 26174) requires 'Enable Certificate Padding' to be set to 'Enabled'
+# This value can be overridden in playbooks or inventory
+# Value 1 = Enabled (CIS requirement)
+win_enable_certificate_padding_enabled_value: 1

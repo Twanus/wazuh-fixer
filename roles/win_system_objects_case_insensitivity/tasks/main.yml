@@ -1,0 +1,39 @@
+---
+# tasks file for win_system_objects_case_insensitivity
+- name: Check current ObCaseInsensitive setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\System\CurrentControlSet\Control\Session Manager\Kernel"
+    $regName = "ObCaseInsensitive"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "0"
+    } else {
+      Write-Output $value
+    }
+  register: win_system_objects_case_insensitivity_current_setting
+  changed_when: false
+
+- name: Display current ObCaseInsensitive setting
+  ansible.builtin.debug:
+    msg: >
+      Current ObCaseInsensitive: {{ win_system_objects_case_insensitivity_current_setting.stdout | trim }}
+      (0=Disabled/Not Set - case sensitivity allowed for non-Windows subsystems, 1=Enabled - case insensitivity required for all subsystems)
+
+- name: Set ObCaseInsensitive to Enabled
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Control\Session Manager\Kernel
+    name: ObCaseInsensitive
+    data: "{{ win_system_objects_case_insensitivity_enabled_value }}"
+    type: dword
+  register: win_system_objects_case_insensitivity_apply_setting
+  when: >
+    (win_system_objects_case_insensitivity_current_setting.stdout | trim | int) != (win_system_objects_case_insensitivity_enabled_value | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      ObCaseInsensitive is already set to {{ win_system_objects_case_insensitivity_current_setting.stdout | trim }},
+      which meets the requirement (1 = Enabled - case insensitivity required for all subsystems)
+  when: >
+    (win_system_objects_case_insensitivity_current_setting.stdout | trim | int) == (win_system_objects_case_insensitivity_enabled_value | int)

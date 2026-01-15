@@ -1,0 +1,39 @@
+---
+# tasks file for win_ms_network_client_plaintext_password
+- name: Check current EnablePlainTextPassword setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\System\CurrentControlSet\Services\LanmanWorkstation\Parameters"
+    $regName = "EnablePlainTextPassword"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "0"
+    } else {
+      Write-Output $value
+    }
+  register: win_ms_network_client_plaintext_password_current_setting
+  changed_when: false
+
+- name: Display current EnablePlainTextPassword setting
+  ansible.builtin.debug:
+    msg: >
+      Current EnablePlainTextPassword: {{ win_ms_network_client_plaintext_password_current_setting.stdout | trim }}
+      (0=Disabled - plaintext passwords not sent to third-party SMB servers [recommended], 1=Enabled - plaintext passwords sent to third-party SMB servers [security risk])
+
+- name: Set EnablePlainTextPassword to Disabled
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Services\LanmanWorkstation\Parameters
+    name: EnablePlainTextPassword
+    data: "{{ win_ms_network_client_plaintext_password_disabled_value }}"
+    type: dword
+  register: win_ms_network_client_plaintext_password_apply_setting
+  when: >
+    (win_ms_network_client_plaintext_password_current_setting.stdout | trim | int) != (win_ms_network_client_plaintext_password_disabled_value | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      EnablePlainTextPassword is already set to {{ win_ms_network_client_plaintext_password_current_setting.stdout | trim }},
+      which meets the requirement (0 = Disabled - plaintext passwords not sent to third-party SMB servers)
+  when: >
+    (win_ms_network_client_plaintext_password_current_setting.stdout | trim | int) == (win_ms_network_client_plaintext_password_disabled_value | int)

@@ -1,0 +1,41 @@
+---
+# tasks file for win_interactive_logon_message_title
+- name: Check current LegalNoticeCaption setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System"
+    $regName = "LegalNoticeCaption"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value -or $value -eq "") {
+      Write-Output ""
+    } else {
+      Write-Output $value
+    }
+  register: win_interactive_logon_message_title_current_setting
+  changed_when: false
+
+- name: Display current LegalNoticeCaption setting
+  ansible.builtin.debug:
+    msg: >
+      Current LegalNoticeCaption: {{ win_interactive_logon_message_title_current_setting.stdout | trim if win_interactive_logon_message_title_current_setting.stdout | trim != "" else "(Not set)" }}
+      (Empty/Not set = not configured, Any text = message title configured)
+
+- name: Set LegalNoticeCaption to required value
+  ansible.windows.win_regedit:
+    path: HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System
+    name: LegalNoticeCaption
+    data: "{{ win_interactive_logon_message_title_message_title }}"
+    type: string
+  register: win_interactive_logon_message_title_apply_setting
+  when: >
+    (win_interactive_logon_message_title_current_setting.stdout | trim == "") or
+    (win_interactive_logon_message_title_current_setting.stdout | trim != win_interactive_logon_message_title_message_title)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      LegalNoticeCaption is already set to "{{ win_interactive_logon_message_title_current_setting.stdout | trim }}",
+      which meets the requirement (message title is configured)
+  when: >
+    (win_interactive_logon_message_title_current_setting.stdout | trim != "") and
+    (win_interactive_logon_message_title_current_setting.stdout | trim == win_interactive_logon_message_title_message_title)

@@ -1,0 +1,66 @@
+---
+# tasks file for win_windows_error_reporting_service_disabled
+- name: Check if Windows Error Reporting Service registry key exists and get Start setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\SYSTEM\CurrentControlSet\Services\WerSvc"
+    $regName = "Start"
+    if (Test-Path -Path $regPath) {
+      $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+      if ($null -eq $value) {
+        Write-Output "NOT_SET"
+      } else {
+        Write-Output $value
+      }
+    } else {
+      Write-Output "KEY_NOT_EXISTS"
+    }
+  register: win_windows_error_reporting_service_disabled_current_setting
+  changed_when: false
+
+- name: Display current Windows Error Reporting Service status
+  ansible.builtin.debug:
+    msg: >
+      Current Windows Error Reporting Service: {{ win_windows_error_reporting_service_disabled_current_setting.stdout | trim }}
+      (KEY_NOT_EXISTS=Service not installed, NOT_SET=Registry key exists but Start value not set, 0=Boot, 1=System, 2=Auto, 3=Manual, 4=Disabled [recommended])
+
+- name: Set Windows Error Reporting Service Start to Disabled
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Services\WerSvc
+    name: Start
+    data: "{{ win_windows_error_reporting_service_disabled_start_value }}"
+    type: dword
+  register: win_windows_error_reporting_service_disabled_apply_setting
+  when: >
+    (win_windows_error_reporting_service_disabled_current_setting.stdout | trim) != "KEY_NOT_EXISTS" and
+    (win_windows_error_reporting_service_disabled_current_setting.stdout | trim) != "NOT_SET" and
+    (win_windows_error_reporting_service_disabled_current_setting.stdout | trim | int) != (win_windows_error_reporting_service_disabled_start_value | int)
+  changed_when: true
+
+- name: Set Windows Error Reporting Service Start to Disabled (when NOT_SET)
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Services\WerSvc
+    name: Start
+    data: "{{ win_windows_error_reporting_service_disabled_start_value }}"
+    type: dword
+  register: win_windows_error_reporting_service_disabled_apply_setting_not_set
+  when: >
+    (win_windows_error_reporting_service_disabled_current_setting.stdout | trim) == "NOT_SET"
+  changed_when: true
+
+- name: Report if service is not installed
+  ansible.builtin.debug:
+    msg: >
+      Windows Error Reporting Service is not installed (registry key does not exist),
+      which is compliant with the requirement (service should be disabled or not installed)
+  when: >
+    (win_windows_error_reporting_service_disabled_current_setting.stdout | trim) == "KEY_NOT_EXISTS"
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      Windows Error Reporting Service Start is already set to {{ win_windows_error_reporting_service_disabled_current_setting.stdout | trim }},
+      which meets the requirement (4 = Disabled - Windows Error Reporting Service is disabled)
+  when: >
+    (win_windows_error_reporting_service_disabled_current_setting.stdout | trim) != "KEY_NOT_EXISTS" and
+    (win_windows_error_reporting_service_disabled_current_setting.stdout | trim) != "NOT_SET" and
+    (win_windows_error_reporting_service_disabled_current_setting.stdout | trim | int) == (win_windows_error_reporting_service_disabled_start_value | int)

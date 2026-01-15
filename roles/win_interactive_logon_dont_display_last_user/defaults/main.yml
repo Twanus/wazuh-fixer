@@ -1,0 +1,6 @@
+---
+# defaults file for win_interactive_logon_dont_display_last_user
+# CIS Benchmark 2.3.7.2 (check 26023) requires 'Interactive logon: Don't display last signed-in' to be set to 'Enabled'
+# This value can be overridden in playbooks or inventory
+# Value 1 = Enabled (CIS requirement - last signed-in user name is not displayed)
+win_interactive_logon_dont_display_last_user_enabled_value: 1

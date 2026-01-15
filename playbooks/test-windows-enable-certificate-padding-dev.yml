@@ -1,0 +1,14 @@
+---
+# Test playbook for win_enable_certificate_padding role (Development)
+# Usage: ansible-playbook -i inventory.ini playbooks/test-windows-enable-certificate-padding-dev.yml
+
+- name: Test Windows Enable Certificate Padding Role (Development)
+  hosts: windows
+  gather_facts: true
+  become: false
+  roles:
+    - role: ../roles/win_enable_certificate_padding  # noqa role-name[path]
+  post_tasks:
+    - name: Verify role completed successfully
+      ansible.builtin.debug:
+        msg: "Role execution completed. Check the output above for configuration."

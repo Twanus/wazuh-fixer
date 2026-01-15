@@ -1,0 +1,43 @@
+---
+# tasks file for win_domain_max_machine_pwd_age
+- name: Check current MaximumPasswordAge setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\System\CurrentControlSet\Services\Netlogon\Parameters"
+    $regName = "MaximumPasswordAge"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "0"
+    } else {
+      Write-Output $value
+    }
+  register: win_domain_max_machine_pwd_age_current_setting
+  changed_when: false
+
+- name: Display current MaximumPasswordAge setting
+  ansible.builtin.debug:
+    msg: >
+      Current MaximumPasswordAge: {{ win_domain_max_machine_pwd_age_current_setting.stdout | trim }} days
+      (0=Disabled - machine account password never expires, 1-30=Enabled - machine account password expires after specified days)
+
+- name: Set MaximumPasswordAge to required value
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Services\Netlogon\Parameters
+    name: MaximumPasswordAge
+    data: "{{ win_domain_max_machine_pwd_age_maximum_password_age }}"
+    type: dword
+  register: win_domain_max_machine_pwd_age_apply_setting
+  when: >
+    (win_domain_max_machine_pwd_age_current_setting.stdout | trim | int) == 0 or
+    (win_domain_max_machine_pwd_age_current_setting.stdout | trim | int) > 30 or
+    (win_domain_max_machine_pwd_age_current_setting.stdout | trim | int) != (win_domain_max_machine_pwd_age_maximum_password_age | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      MaximumPasswordAge is already set to {{ win_domain_max_machine_pwd_age_current_setting.stdout | trim }} days,
+      which meets the requirement (30 or fewer days, but not 0)
+  when: >
+    (win_domain_max_machine_pwd_age_current_setting.stdout | trim | int) != 0 and
+    (win_domain_max_machine_pwd_age_current_setting.stdout | trim | int) <= 30 and
+    (win_domain_max_machine_pwd_age_current_setting.stdout | trim | int) == (win_domain_max_machine_pwd_age_maximum_password_age | int)

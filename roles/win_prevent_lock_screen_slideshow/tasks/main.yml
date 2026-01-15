@@ -1,0 +1,49 @@
+---
+# tasks file for win_prevent_lock_screen_slideshow
+- name: Check current NoLockScreenSlideshow setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Personalization"
+    $regName = "NoLockScreenSlideshow"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "NOT_SET"
+    } else {
+      Write-Output $value
+    }
+  register: win_prevent_lock_screen_slideshow_current_setting
+  changed_when: false
+
+- name: Display current NoLockScreenSlideshow setting
+  ansible.builtin.debug:
+    msg: >
+      Current NoLockScreenSlideshow: {{ win_prevent_lock_screen_slideshow_current_setting.stdout | trim }}
+      (0=Disabled/Not Set - lock screen slide show allowed, 1=Enabled - lock screen slide show prevented [CIS requirement], NOT_SET=Not configured)
+
+- name: Ensure Personalization registry key exists
+  ansible.windows.win_regedit:
+    path: HKLM:\SOFTWARE\Policies\Microsoft\Windows\Personalization
+    state: present
+  register: win_prevent_lock_screen_slideshow_ensure_key
+  when: win_prevent_lock_screen_slideshow_current_setting.stdout | trim == "NOT_SET"
+  changed_when: true
+
+- name: Set NoLockScreenSlideshow to Enabled
+  ansible.windows.win_regedit:
+    path: HKLM:\SOFTWARE\Policies\Microsoft\Windows\Personalization
+    name: NoLockScreenSlideshow
+    data: "{{ win_prevent_lock_screen_slideshow_no_lock_screen_slideshow }}"
+    type: dword
+  register: win_prevent_lock_screen_slideshow_apply_setting
+  when: >
+    (win_prevent_lock_screen_slideshow_current_setting.stdout | trim == "NOT_SET") or
+    ((win_prevent_lock_screen_slideshow_current_setting.stdout | trim | int) != (win_prevent_lock_screen_slideshow_no_lock_screen_slideshow | int))
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      NoLockScreenSlideshow is already set to {{ win_prevent_lock_screen_slideshow_current_setting.stdout | trim }},
+      which meets the requirement (1 = Enabled - prevents enabling lock screen slide show)
+  when: >
+    (win_prevent_lock_screen_slideshow_current_setting.stdout | trim != "NOT_SET") and
+    ((win_prevent_lock_screen_slideshow_current_setting.stdout | trim | int) == (win_prevent_lock_screen_slideshow_no_lock_screen_slideshow | int))

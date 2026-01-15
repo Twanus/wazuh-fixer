@@ -1,0 +1,39 @@
+---
+# tasks file for win_system_objects_strengthen_default_permissions
+- name: Check current ProtectionMode setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\System\CurrentControlSet\Control\Session Manager"
+    $regName = "ProtectionMode"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "0"
+    } else {
+      Write-Output $value
+    }
+  register: win_system_objects_strengthen_default_permissions_current_setting
+  changed_when: false
+
+- name: Display current ProtectionMode setting
+  ansible.builtin.debug:
+    msg: >
+      Current ProtectionMode: {{ win_system_objects_strengthen_default_permissions_current_setting.stdout | trim }}
+      (0=Disabled/Not Set - default DACL not strengthened, 1=Enabled - default DACL strengthened for internal system objects)
+
+- name: Set ProtectionMode to Enabled
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Control\Session Manager
+    name: ProtectionMode
+    data: "{{ win_system_objects_strengthen_default_permissions_protection_mode_value }}"
+    type: dword
+  register: win_system_objects_strengthen_default_permissions_apply_setting
+  when: >
+    (win_system_objects_strengthen_default_permissions_current_setting.stdout | trim | int) != (win_system_objects_strengthen_default_permissions_protection_mode_value | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      ProtectionMode is already set to {{ win_system_objects_strengthen_default_permissions_current_setting.stdout | trim }},
+      which meets the requirement (1 = Enabled - default DACL strengthened for internal system objects)
+  when: >
+    (win_system_objects_strengthen_default_permissions_current_setting.stdout | trim | int) == (win_system_objects_strengthen_default_permissions_protection_mode_value | int)

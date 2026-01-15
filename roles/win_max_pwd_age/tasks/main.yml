@@ -1,0 +1,56 @@
+---
+# tasks file for win_max_pwd_age
+- name: Check current maximum password age
+  ansible.windows.win_shell: |
+    secedit /export /cfg $env:TEMP\secpol.cfg 2>&1 | Out-Null
+    $content = Get-Content $env:TEMP\secpol.cfg | Select-String "MaximumPasswordAge"
+    Remove-Item $env:TEMP\secpol.cfg -ErrorAction SilentlyContinue
+    if ($content) {
+      $value = ($content -split '=')[1].Trim()
+      Write-Output $value
+    } else {
+      Write-Output "0"
+    }
+  register: win_max_pwd_age_current_maximum_password_age
+  changed_when: false
+
+- name: Display current maximum password age
+  ansible.builtin.debug:
+    msg: "Current maximum password age: {{ win_max_pwd_age_current_maximum_password_age.stdout | trim }} days"
+
+- name: Set maximum password age using net accounts
+  ansible.windows.win_shell: |
+    # Use net accounts command which is more reliable than secedit
+    # Ensure value is not 0 (0 means never expire, which is not allowed)
+    $maxAge = {{ win_max_pwd_age_maximum_password_age }}
+    if ($maxAge -eq 0) {
+      Write-Error "Maximum password age cannot be 0. It must be between 1 and 365 days."
+      exit 1
+    }
+    if ($maxAge -gt 365) {
+      Write-Error "Maximum password age cannot exceed 365 days."
+      exit 1
+    }
+    $result = net accounts /maxpwage:$maxAge 2>&1
+    $exitCode = $LASTEXITCODE
+    if ($exitCode -eq 0) {
+      Write-Output "Maximum password age policy set to $maxAge days successfully"
+    } else {
+      Write-Error "Failed to set maximum password age policy. Exit code: $exitCode, Output: $result"
+      exit $exitCode
+    }
+  register: win_max_pwd_age_apply_policy
+  when: >
+    (win_max_pwd_age_current_maximum_password_age.stdout | trim | int == 0) or
+    (win_max_pwd_age_current_maximum_password_age.stdout | trim | int > win_max_pwd_age_maximum_password_age | int)
+  changed_when: true
+  notify: Win_max_pwd_age_verify_maximum_password_age
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      Maximum password age is already set to {{ win_max_pwd_age_current_maximum_password_age.stdout | trim }} days,
+      which meets the requirement (not 0 and <= {{ win_max_pwd_age_maximum_password_age }} days)
+  when: >
+    (win_max_pwd_age_current_maximum_password_age.stdout | trim | int != 0) and
+    (win_max_pwd_age_current_maximum_password_age.stdout | trim | int <= win_max_pwd_age_maximum_password_age | int)

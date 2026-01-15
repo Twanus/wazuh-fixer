@@ -1,0 +1,5 @@
+---
+# defaults file for win_audit_other_policy_change_events
+# This role configures the 'Other Policy Change Events' audit policy to include Failure
+# CIS Benchmark: 17.7.5
+# Wazuh Check: 26159

@@ -1,0 +1,86 @@
+---
+# tasks file for win_account_lockout_threshold
+- name: Check current account lockout threshold
+  ansible.windows.win_shell: |
+    secedit /export /cfg $env:TEMP\secpol.cfg 2>&1 | Out-Null
+    $content = Get-Content $env:TEMP\secpol.cfg | Select-String "LockoutBadCount"
+    Remove-Item $env:TEMP\secpol.cfg -ErrorAction SilentlyContinue
+    if ($content) {
+      $value = ($content -split '=')[1].Trim()
+      Write-Output $value
+    } else {
+      Write-Output "0"
+    }
+  register: win_account_lockout_threshold_current_lockout_threshold
+  changed_when: false
+
+- name: Display current account lockout threshold
+  ansible.builtin.debug:
+    msg: "Current account lockout threshold: {{ win_account_lockout_threshold_current_lockout_threshold.stdout | trim }} invalid logon attempt(s)"
+
+- name: Set account lockout threshold using secedit
+  ansible.windows.win_shell: |
+    # Create INF file for secedit
+    # Ensure value is between 1 and 5 (CIS requirement: <= 5 but not 0)
+    $lockoutThreshold = {{ win_account_lockout_threshold_lockout_threshold }}
+    if ($lockoutThreshold -eq 0) {
+      Write-Error "Account lockout threshold cannot be 0 (CIS requirement)."
+      exit 1
+    }
+    if ($lockoutThreshold -gt 5) {
+      Write-Error "Account lockout threshold must be 5 or fewer (CIS requirement)."
+      exit 1
+    }
+    $infLines = @(
+      "[Unicode]",
+      "Unicode=yes",
+      "[System Access]",
+      "LockoutBadCount = $lockoutThreshold"
+    )
+    $infContent = $infLines -join "`r`n" + "`r`n"
+    
+    # Use C:\Windows\Temp which secedit can access
+    $tempDir = "C:\Windows\Temp"
+    if (-not (Test-Path $tempDir)) {
+      New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
+    }
+    $infPath = "$tempDir\lockout_threshold.inf"
+    $dbPath = "$tempDir\secpol.sdb"
+    
+    # Clean up any existing files
+    Remove-Item $infPath -ErrorAction SilentlyContinue
+    Remove-Item $dbPath -ErrorAction SilentlyContinue
+    
+    # Write INF file
+    [System.IO.File]::WriteAllText($infPath, $infContent, [System.Text.Encoding]::ASCII)
+    
+    # Apply policy using secedit
+    $process = Start-Process -FilePath "secedit.exe" -ArgumentList "/configure", "/db", $dbPath, "/cfg", $infPath, "/quiet" -Wait -PassThru -NoNewWindow
+    $exitCode = $process.ExitCode
+    
+    # Cleanup
+    Start-Sleep -Seconds 1
+    Remove-Item $dbPath -ErrorAction SilentlyContinue
+    Remove-Item $infPath -ErrorAction SilentlyContinue
+    
+    if ($exitCode -eq 0) {
+      Write-Output "Account lockout threshold policy set to $lockoutThreshold invalid logon attempt(s) successfully"
+    } else {
+      Write-Output "secedit completed with exit code: $exitCode"
+    }
+  register: win_account_lockout_threshold_apply_policy
+  when: >
+    (win_account_lockout_threshold_current_lockout_threshold.stdout | trim | int == 0) or
+    (win_account_lockout_threshold_current_lockout_threshold.stdout | trim | int > win_account_lockout_threshold_lockout_threshold | int)
+  changed_when: true
+  failed_when: false
+  notify: Win_account_lockout_threshold_verify_lockout_threshold
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      Account lockout threshold is already set to {{ win_account_lockout_threshold_current_lockout_threshold.stdout | trim }} invalid logon attempt(s),
+      which meets the requirement (1-{{ win_account_lockout_threshold_lockout_threshold }} attempts, but not 0)
+  when: >
+    (win_account_lockout_threshold_current_lockout_threshold.stdout | trim | int > 0) and
+    (win_account_lockout_threshold_current_lockout_threshold.stdout | trim | int <= win_account_lockout_threshold_lockout_threshold | int)

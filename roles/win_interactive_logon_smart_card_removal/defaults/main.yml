@@ -1,0 +1,12 @@
+---
+# defaults file for win_interactive_logon_smart_card_removal
+# CIS Benchmark 2.3.7.9 (check 26030) requires 'Interactive logon: Smart card removal behavior' to be set to 'Lock Workstation' (1) or higher (2=Force Logoff, 3=Disconnect if Remote Desktop Services session)
+# This value can be overridden in playbooks or inventory
+# Value must be 1, 2, or 3 (CIS requirement: Lock Workstation or higher)
+# Default value is 1 (Lock Workstation - recommended by CIS)
+# Valid values:
+#   0 = No action (does not conform to CIS)
+#   1 = Lock Workstation (recommended)
+#   2 = Force Logoff (also conforms to CIS)
+#   3 = Disconnect if Remote Desktop Services session (also conforms to CIS)
+win_interactive_logon_smart_card_removal_sc_remove_option: 1

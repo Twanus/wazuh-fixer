@@ -1,0 +1,14 @@
+---
+# Test playbook for win_prevent_lock_screen_slideshow role (Development)
+# Usage: ansible-playbook -i inventory.ini playbooks/test-windows-prevent-lock-screen-slideshow-dev.yml
+
+- name: Test Windows Prevent Lock Screen Slide Show Role (Development)
+  hosts: windows
+  gather_facts: true
+  become: false
+  roles:
+    - role: ../roles/win_prevent_lock_screen_slideshow  # noqa role-name[path]
+  post_tasks:
+    - name: Verify role completed successfully
+      ansible.builtin.debug:
+        msg: "Role execution completed. Check the output above for NoLockScreenSlideshow configuration."

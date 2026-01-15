@@ -1,0 +1,14 @@
+---
+# Test playbook for win_xbox_live_auth_manager_disabled role (Development)
+# Usage: ansible-playbook -i inventory.ini playbooks/test-windows-xbox-live-auth-manager-disabled-dev.yml
+
+- name: Test Xbox Live Auth Manager Disabled Role (Development)
+  hosts: windows
+  gather_facts: true
+  become: false
+  roles:
+    - role: ../roles/win_xbox_live_auth_manager_disabled  # noqa role-name[path]
+  post_tasks:
+    - name: Verify role completed successfully
+      ansible.builtin.debug:
+        msg: "Role execution completed. Check the output above for configuration."

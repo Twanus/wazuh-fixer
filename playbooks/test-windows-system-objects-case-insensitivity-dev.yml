@@ -1,0 +1,14 @@
+---
+# Test playbook for win_system_objects_case_insensitivity role (Development)
+# Usage: ansible-playbook -i inventory.ini playbooks/test-windows-system-objects-case-insensitivity-dev.yml
+
+- name: Test Windows System Objects Case Insensitivity Role (Development)
+  hosts: windows
+  gather_facts: true
+  become: false
+  roles:
+    - role: ../roles/win_system_objects_case_insensitivity  # noqa role-name[path]
+  post_tasks:
+    - name: Verify role completed successfully
+      ansible.builtin.debug:
+        msg: "Role execution completed. Check the output above for ObCaseInsensitive configuration."

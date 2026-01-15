@@ -1,0 +1,6 @@
+---
+# defaults file for win_online_speech_recognition_disabled
+# CIS Benchmark 18.1.2.2 (check 26168) requires 'Allow users to enable online speech recognition services' to be set to 'Disabled'
+# This value can be overridden in playbooks or inventory
+# Value 0 = Disabled (CIS requirement)
+win_online_speech_recognition_disabled_disabled_value: 0

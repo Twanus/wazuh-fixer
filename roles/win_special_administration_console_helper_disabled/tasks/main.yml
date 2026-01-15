@@ -1,0 +1,67 @@
+---
+# tasks file for win_special_administration_console_helper_disabled
+- name: Check if Special Administration Console Helper service registry key exists and get Start setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\SYSTEM\CurrentControlSet\Services\sacsvr"
+    $regName = "Start"
+    if (Test-Path -Path $regPath) {
+      $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+      if ($null -eq $value) {
+        Write-Output "NOT_SET"
+      } else {
+        Write-Output $value
+      }
+    } else {
+      Write-Output "KEY_NOT_EXISTS"
+    }
+  register: win_special_administration_console_helper_disabled_current_setting
+  changed_when: false
+
+- name: Display current Special Administration Console Helper service status
+  ansible.builtin.debug:
+    msg: >
+      Current Special Administration Console Helper service: {{ win_special_administration_console_helper_disabled_current_setting.stdout | trim }}
+      (KEY_NOT_EXISTS=Service not installed [compliant], NOT_SET=Registry key exists but Start value not set, 0=Boot, 1=System, 2=Auto, 3=Manual, 4=Disabled [recommended])
+  when: win_special_administration_console_helper_disabled_current_setting.stdout is defined
+
+- name: Set Special Administration Console Helper Service Start to Disabled
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Services\sacsvr
+    name: Start
+    data: "{{ win_special_administration_console_helper_disabled_start_value }}"
+    type: dword
+  register: win_special_administration_console_helper_disabled_apply_setting
+  when: >
+    (win_special_administration_console_helper_disabled_current_setting.stdout | trim) != "KEY_NOT_EXISTS" and
+    (win_special_administration_console_helper_disabled_current_setting.stdout | trim) != "NOT_SET" and
+    (win_special_administration_console_helper_disabled_current_setting.stdout | trim | int) != (win_special_administration_console_helper_disabled_start_value | int)
+  changed_when: true
+
+- name: Set Special Administration Console Helper Service Start to Disabled (when NOT_SET)
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Services\sacsvr
+    name: Start
+    data: "{{ win_special_administration_console_helper_disabled_start_value }}"
+    type: dword
+  register: win_special_administration_console_helper_disabled_apply_setting_not_set
+  when: >
+    (win_special_administration_console_helper_disabled_current_setting.stdout | trim) == "NOT_SET"
+  changed_when: true
+
+- name: Report if service is not installed (compliant)
+  ansible.builtin.debug:
+    msg: >
+      Special Administration Console Helper service is not installed (registry key does not exist),
+      which meets the requirement (Disabled or Not Installed)
+  when: >
+    (win_special_administration_console_helper_disabled_current_setting.stdout | trim) == "KEY_NOT_EXISTS"
+
+- name: Report if service is already disabled (compliant)
+  ansible.builtin.debug:
+    msg: >
+      Special Administration Console Helper service Start is already set to {{ win_special_administration_console_helper_disabled_current_setting.stdout | trim }},
+      which meets the requirement (4 = Disabled)
+  when: >
+    (win_special_administration_console_helper_disabled_current_setting.stdout | trim) != "KEY_NOT_EXISTS" and
+    (win_special_administration_console_helper_disabled_current_setting.stdout | trim) != "NOT_SET" and
+    (win_special_administration_console_helper_disabled_current_setting.stdout | trim | int) == (win_special_administration_console_helper_disabled_start_value | int)

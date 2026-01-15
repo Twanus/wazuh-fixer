@@ -1,0 +1,41 @@
+---
+# tasks file for win_interactive_logon_cached_logons_count
+- name: Check current CachedLogonsCount setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon"
+    $regName = "CachedLogonsCount"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "0"
+    } else {
+      Write-Output $value
+    }
+  register: win_interactive_logon_cached_logons_count_current_setting
+  changed_when: false
+
+- name: Display current CachedLogonsCount setting
+  ansible.builtin.debug:
+    msg: >
+      Current CachedLogonsCount: {{ win_interactive_logon_cached_logons_count_current_setting.stdout | trim }} logon(s)
+      (0=Disabled - logon cache feature disabled, 1-4=Enabled - caches logon information for specified number of users)
+
+- name: Set CachedLogonsCount to required value
+  ansible.windows.win_regedit:
+    path: HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon
+    name: CachedLogonsCount
+    data: "{{ win_interactive_logon_cached_logons_count_cached_logons_count }}"
+    type: dword
+  register: win_interactive_logon_cached_logons_count_apply_setting
+  when: >
+    (win_interactive_logon_cached_logons_count_current_setting.stdout | trim | int) > 4 or
+    (win_interactive_logon_cached_logons_count_current_setting.stdout | trim | int) != (win_interactive_logon_cached_logons_count_cached_logons_count | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      CachedLogonsCount is already set to {{ win_interactive_logon_cached_logons_count_current_setting.stdout | trim }} logon(s),
+      which meets the requirement (4 or fewer logon(s))
+  when: >
+    (win_interactive_logon_cached_logons_count_current_setting.stdout | trim | int) <= 4 and
+    (win_interactive_logon_cached_logons_count_current_setting.stdout | trim | int) == (win_interactive_logon_cached_logons_count_cached_logons_count | int)

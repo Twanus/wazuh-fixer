@@ -1,0 +1,199 @@
+---
+# tasks file for linux_wazuh_rootcheck_false_positives
+- name: Check if files exist
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  register: linux_wazuh_rootcheck_false_positives_file_stats
+  loop: "{{ linux_wazuh_rootcheck_false_positives_files }}"
+  failed_when: false
+
+- name: Filter existing files
+  ansible.builtin.set_fact:
+    linux_wazuh_rootcheck_false_positives_existing_files: "{{ linux_wazuh_rootcheck_false_positives_existing_files | default([]) + [item.item] }}"
+  loop: "{{ linux_wazuh_rootcheck_false_positives_file_stats.results }}"
+  when: item.stat.exists | default(false)
+  loop_control:
+    label: "{{ item.item }}"
+
+- name: Verify file types are ELF executables
+  ansible.builtin.command:
+    cmd: file "{{ item }}"
+  register: linux_wazuh_rootcheck_false_positives_file_types
+  loop: "{{ linux_wazuh_rootcheck_false_positives_existing_files | default([]) }}"
+  changed_when: false
+
+- name: Check if files are legitimate ELF binaries
+  ansible.builtin.set_fact:
+    linux_wazuh_rootcheck_false_positives_legitimate_files: "{{ linux_wazuh_rootcheck_false_positives_legitimate_files | default([]) + [item.item] }}"
+  loop: "{{ linux_wazuh_rootcheck_false_positives_file_types.results }}"
+  when: >
+    'ELF' in item.stdout and
+    ('executable' in item.stdout or 'LSB pie executable' in item.stdout)
+  loop_control:
+    label: "{{ item.item }}"
+
+- name: Verify package integrity using dpkg -V
+  ansible.builtin.shell: |
+    set -o pipefail
+    PACKAGE=$(dpkg -S "{{ item }}" 2>/dev/null | cut -d: -f1 | head -1)
+    if [ -n "$PACKAGE" ]; then
+      # Check if file is modified (excluding config files marked with ??5)
+      if dpkg -V "$PACKAGE" 2>/dev/null | grep -v "^??5" | grep -q "{{ item }}"; then
+        echo "MODIFIED"
+      else
+        echo "OK"
+      fi
+    else
+      echo "UNKNOWN"
+    fi
+  register: linux_wazuh_rootcheck_false_positives_pkg_verify
+  loop: "{{ linux_wazuh_rootcheck_false_positives_legitimate_files | default([]) }}"
+  changed_when: false
+  failed_when: false
+  when: ansible_pkg_mgr == 'apt'
+
+- name: Display package verification results
+  ansible.builtin.debug:
+    msg: "{{ item.item }}: Package verification - {{ item.stdout }}"
+  loop: "{{ linux_wazuh_rootcheck_false_positives_pkg_verify.results | default([]) }}"
+  when: ansible_pkg_mgr == 'apt'
+
+- name: Display verification results
+  ansible.builtin.debug:
+    msg: >
+      Verification Summary:
+      {% for file in linux_wazuh_rootcheck_false_positives_legitimate_files | default([]) %}
+      - {{ file }}: Legitimate ELF binary
+      {% endfor %}
+      {% for file in linux_wazuh_rootcheck_false_positives_existing_files | default([]) %}
+      {% if file not in (linux_wazuh_rootcheck_false_positives_legitimate_files | default([])) %}
+      - {{ file }}: WARNING - File exists but verification failed
+      {% endif %}
+      {% endfor %}
+
+- name: Check if Wazuh agent is installed
+  ansible.builtin.stat:
+    path: "{{ linux_wazuh_rootcheck_false_positives_ossec_conf }}"
+  register: linux_wazuh_rootcheck_false_positives_ossec_conf_stat
+
+- name: Read current Wazuh ossec.conf
+  ansible.builtin.slurp:
+    src: "{{ linux_wazuh_rootcheck_false_positives_ossec_conf }}"
+  register: linux_wazuh_rootcheck_false_positives_ossec_conf_content
+  when: >
+    linux_wazuh_rootcheck_false_positives_ossec_conf_stat.stat.exists and
+    linux_wazuh_rootcheck_false_positives_auto_configure | bool
+
+- name: Parse existing rootcheck ignore entries
+  ansible.builtin.set_fact:
+    linux_wazuh_rootcheck_false_positives_existing_ignores: >-
+      {{
+        (
+          linux_wazuh_rootcheck_false_positives_ossec_conf_content.content
+          | b64decode
+          | regex_findall('(?i)<ignore>(.*?)</ignore>')
+        )
+        | map('trim')
+        | list
+      }}
+  when:
+    - linux_wazuh_rootcheck_false_positives_ossec_conf_stat.stat.exists
+    - linux_wazuh_rootcheck_false_positives_auto_configure | bool
+
+- name: Determine files that need to be added to ignore list
+  ansible.builtin.set_fact:
+    linux_wazuh_rootcheck_false_positives_files_to_add: "{{ linux_wazuh_rootcheck_false_positives_files_to_add | default([]) + [item] | list }}"
+  loop: "{{ linux_wazuh_rootcheck_false_positives_legitimate_files | default([]) }}"
+  when: >
+    linux_wazuh_rootcheck_false_positives_ossec_conf_stat.stat.exists and
+    linux_wazuh_rootcheck_false_positives_auto_configure | bool and
+    item not in (linux_wazuh_rootcheck_false_positives_existing_ignores | default([]))
+  loop_control:
+    label: "{{ item }}"
+
+- name: Backup ossec.conf before modification
+  ansible.builtin.copy:
+    src: "{{ linux_wazuh_rootcheck_false_positives_ossec_conf }}"
+    dest: "{{ linux_wazuh_rootcheck_false_positives_ossec_conf }}.backup-{{ ansible_date_time.epoch }}"
+    remote_src: true
+    mode: '0644'
+  when: >
+    linux_wazuh_rootcheck_false_positives_ossec_conf_stat.stat.exists and
+    linux_wazuh_rootcheck_false_positives_auto_configure | bool and
+    linux_wazuh_rootcheck_false_positives_files_to_add | length > 0
+
+- name: Check if rootcheck section exists
+  ansible.builtin.set_fact:
+    linux_wazuh_rootcheck_false_positives_rootcheck_exists: >-
+      {{
+        '<rootcheck>' in (
+          linux_wazuh_rootcheck_false_positives_ossec_conf_content.content
+          | b64decode
+        )
+      }}
+  when:
+    - linux_wazuh_rootcheck_false_positives_ossec_conf_stat.stat.exists
+    - linux_wazuh_rootcheck_false_positives_auto_configure | bool
+
+- name: Add rootcheck section if it doesn't exist
+  ansible.builtin.lineinfile:
+    path: "{{ linux_wazuh_rootcheck_false_positives_ossec_conf }}"
+    line: "  <rootcheck>"
+    insertafter: "  </ossec_config>"
+    state: present
+  when: >
+    linux_wazuh_rootcheck_false_positives_ossec_conf_stat.stat.exists and
+    linux_wazuh_rootcheck_false_positives_auto_configure | bool and
+    linux_wazuh_rootcheck_false_positives_files_to_add | length > 0 and
+    not (linux_wazuh_rootcheck_false_positives_rootcheck_exists | default(false))
+  register: linux_wazuh_rootcheck_false_positives_add_rootcheck_section
+
+- name: Add closing rootcheck tag if section was just created
+  ansible.builtin.lineinfile:
+    path: "{{ linux_wazuh_rootcheck_false_positives_ossec_conf }}"
+    line: "  </rootcheck>"
+    insertafter: "  <rootcheck>"
+    state: present
+  when: >
+    linux_wazuh_rootcheck_false_positives_ossec_conf_stat.stat.exists and
+    linux_wazuh_rootcheck_false_positives_auto_configure | bool and
+    linux_wazuh_rootcheck_false_positives_files_to_add | length > 0 and
+    linux_wazuh_rootcheck_false_positives_add_rootcheck_section.changed | default(false)
+
+- name: Add files to rootcheck ignore list
+  ansible.builtin.lineinfile:
+    path: "{{ linux_wazuh_rootcheck_false_positives_ossec_conf }}"
+    line: "    <ignore>{{ item }}</ignore>"
+    insertbefore: "  </rootcheck>"
+    state: present
+  loop: "{{ linux_wazuh_rootcheck_false_positives_files_to_add | default([]) }}"
+  when: >
+    linux_wazuh_rootcheck_false_positives_ossec_conf_stat.stat.exists and
+    linux_wazuh_rootcheck_false_positives_auto_configure | bool and
+    linux_wazuh_rootcheck_false_positives_files_to_add | length > 0
+  register: linux_wazuh_rootcheck_false_positives_config_changes
+
+- name: Restart Wazuh agent (if configuration changed)
+  ansible.builtin.systemd:
+    name: wazuh-agent
+    state: restarted
+  when: >
+    (linux_wazuh_rootcheck_false_positives_config_changes.changed | default(false)) or
+    (linux_wazuh_rootcheck_false_positives_add_rootcheck_section.changed | default(false))
+  failed_when: false
+
+- name: Report configuration status
+  ansible.builtin.debug:
+    msg: >
+      {% if linux_wazuh_rootcheck_false_positives_files_to_add | default([]) | length > 0 %}
+      Added {{ linux_wazuh_rootcheck_false_positives_files_to_add | length }} file(s) to Wazuh rootcheck ignore list.
+      Files: {{ linux_wazuh_rootcheck_false_positives_files_to_add | join(', ') }}
+      {% elif linux_wazuh_rootcheck_false_positives_existing_ignores | default([]) | length > 0 %}
+      All legitimate files are already in the Wazuh rootcheck ignore list.
+      {% elif not linux_wazuh_rootcheck_false_positives_ossec_conf_stat.stat.exists %}
+      Wazuh agent configuration file not found. Skipping configuration.
+      {% elif not (linux_wazuh_rootcheck_false_positives_auto_configure | bool) %}
+      Auto-configure is disabled. Files verified but not added to ignore list.
+      {% else %}
+      No files needed to be added to ignore list.
+      {% endif %}

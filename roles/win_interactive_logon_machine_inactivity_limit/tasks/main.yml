@@ -1,0 +1,43 @@
+---
+# tasks file for win_interactive_logon_machine_inactivity_limit
+- name: Check current InactivityTimeoutSecs setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System"
+    $regName = "InactivityTimeoutSecs"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "0"
+    } else {
+      Write-Output $value
+    }
+  register: win_interactive_logon_machine_inactivity_limit_current_setting
+  changed_when: false
+
+- name: Display current InactivityTimeoutSecs setting
+  ansible.builtin.debug:
+    msg: >
+      Current InactivityTimeoutSecs: {{ win_interactive_logon_machine_inactivity_limit_current_setting.stdout | trim }} seconds
+      (0=Disabled - machine inactivity limit disabled, 1-900=Enabled - screen saver runs after specified seconds of inactivity)
+
+- name: Set InactivityTimeoutSecs to required value
+  ansible.windows.win_regedit:
+    path: HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System
+    name: InactivityTimeoutSecs
+    data: "{{ win_interactive_logon_machine_inactivity_limit_inactivity_timeout }}"
+    type: dword
+  register: win_interactive_logon_machine_inactivity_limit_apply_setting
+  when: >
+    (win_interactive_logon_machine_inactivity_limit_current_setting.stdout | trim | int) == 0 or
+    (win_interactive_logon_machine_inactivity_limit_current_setting.stdout | trim | int) > 900 or
+    (win_interactive_logon_machine_inactivity_limit_current_setting.stdout | trim | int) != (win_interactive_logon_machine_inactivity_limit_inactivity_timeout | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      InactivityTimeoutSecs is already set to {{ win_interactive_logon_machine_inactivity_limit_current_setting.stdout | trim }} seconds,
+      which meets the requirement (900 or fewer seconds, but not 0)
+  when: >
+    (win_interactive_logon_machine_inactivity_limit_current_setting.stdout | trim | int) != 0 and
+    (win_interactive_logon_machine_inactivity_limit_current_setting.stdout | trim | int) <= 900 and
+    (win_interactive_logon_machine_inactivity_limit_current_setting.stdout | trim | int) == (win_interactive_logon_machine_inactivity_limit_inactivity_timeout | int)

@@ -1,0 +1,39 @@
+---
+# tasks file for win_remote_access_auto_connection_manager_disabled
+- name: Check current RasAuto Start setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\SYSTEM\CurrentControlSet\Services\RasAuto"
+    $regName = "Start"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "2"
+    } else {
+      Write-Output $value
+    }
+  register: win_remote_access_auto_connection_manager_disabled_current_setting
+  changed_when: false
+
+- name: Display current RasAuto Start setting
+  ansible.builtin.debug:
+    msg: >
+      Current RasAuto Start: {{ win_remote_access_auto_connection_manager_disabled_current_setting.stdout | trim }}
+      (0=Boot, 1=System, 2=Auto, 3=Manual, 4=Disabled [recommended])
+
+- name: Set RasAuto Start to Disabled
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Services\RasAuto
+    name: Start
+    data: "{{ win_remote_access_auto_connection_manager_disabled_start_value }}"
+    type: dword
+  register: win_remote_access_auto_connection_manager_disabled_apply_setting
+  when: >
+    (win_remote_access_auto_connection_manager_disabled_current_setting.stdout | trim | int) != (win_remote_access_auto_connection_manager_disabled_start_value | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      RasAuto Start is already set to {{ win_remote_access_auto_connection_manager_disabled_current_setting.stdout | trim }},
+      which meets the requirement (4 = Disabled - Remote Access Auto Connection Manager is disabled)
+  when: >
+    (win_remote_access_auto_connection_manager_disabled_current_setting.stdout | trim | int) == (win_remote_access_auto_connection_manager_disabled_start_value | int)

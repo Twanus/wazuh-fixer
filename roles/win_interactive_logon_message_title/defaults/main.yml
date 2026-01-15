@@ -1,0 +1,7 @@
+---
+# defaults file for win_interactive_logon_message_title
+# CIS Benchmark 2.3.7.6 (check 26027) requires 'Interactive logon: Message title for users attempting to log on' to be configured
+# This value can be overridden in playbooks or inventory
+# The value should be a message title that is consistent with your organization's security and operational requirements
+# Default value is a generic security notice title
+win_interactive_logon_message_title_message_title: "Security Notice"

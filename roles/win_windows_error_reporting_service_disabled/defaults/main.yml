@@ -1,0 +1,7 @@
+---
+# defaults file for win_windows_error_reporting_service_disabled
+# CIS Benchmark 5.33 (check 26104) requires 'Windows Error Reporting Service (WerSvc)' to be set to 'Disabled'
+# This value can be overridden in playbooks or inventory
+# Service Start values: 0=Boot, 1=System, 2=Auto, 3=Manual, 4=Disabled
+# Value 4 = Disabled (CIS requirement - Windows Error Reporting Service is disabled)
+win_windows_error_reporting_service_disabled_start_value: 4

@@ -1,0 +1,11 @@
+---
+# defaults file for win_ms_network_server_spn_validation
+# CIS Benchmark 2.3.9.5 (check 26038) requires 'Microsoft network server: Server SPN target name validation level' to be set to 'Accept if provided by client' (1) or higher
+# This value can be overridden in playbooks or inventory
+# Value must be 1 or higher (CIS requirement: Accept if provided by client or higher)
+# Default value is 1 (Accept if provided by client - recommended by CIS)
+# Valid values:
+#   0 = Off - no SPN validation (does not conform to CIS)
+#   1 = Accept if provided by client (recommended)
+#   2 = Required from client (also conforms to CIS)
+win_ms_network_server_spn_validation_validation_level: 1

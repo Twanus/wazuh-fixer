@@ -1,0 +1,14 @@
+---
+# Test playbook for win_guest_account_status role (Development)
+# Usage: ansible-playbook -i ../inventory.ini playbooks/test-windows-guest-account-status-dev.yml
+
+- name: Test Windows Guest Account Status Role (Development)
+  hosts: windows
+  gather_facts: true
+  become: false
+  roles:
+    - role: ../roles/win_guest_account_status  # noqa role-name[path]
+  post_tasks:
+    - name: Verify role completed successfully
+      ansible.builtin.debug:
+        msg: "Role execution completed. Check the output above for Guest account status."

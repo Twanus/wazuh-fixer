@@ -1,0 +1,7 @@
+---
+# defaults file for win_remote_desktop_services_disabled
+# CIS Benchmark 5.21 (check 26092) requires 'Remote Desktop Services (TermService)' to be set to 'Disabled'
+# This value can be overridden in playbooks or inventory
+# Service Start values: 0=Boot, 1=System, 2=Auto, 3=Manual, 4=Disabled
+# Value 4 = Disabled (CIS requirement - Remote Desktop Services is disabled)
+win_remote_desktop_services_disabled_start_value: 4

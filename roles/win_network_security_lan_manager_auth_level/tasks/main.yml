@@ -1,0 +1,41 @@
+---
+# tasks file for win_network_security_lan_manager_auth_level
+- name: Check current LmCompatibilityLevel setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\System\CurrentControlSet\Control\Lsa"
+    $regName = "LmCompatibilityLevel"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "0"
+    } else {
+      Write-Output $value
+    }
+  register: win_network_security_lan_manager_auth_level_current_setting
+  changed_when: false
+
+- name: Display current LmCompatibilityLevel setting
+  ansible.builtin.debug:
+    msg: >
+      Current LmCompatibilityLevel: {{ win_network_security_lan_manager_auth_level_current_setting.stdout | trim }}
+      (0=Send LM & NTLM responses, 1=Send LM & NTLM - use NTLMv2 session security if negotiated,
+      2=Send NTLM response only, 3=Send NTLMv2 response only, 4=Send NTLMv2 response only. Refuse LM,
+      5=Send NTLMv2 response only. Refuse LM & NTLM)
+
+- name: Set LmCompatibilityLevel to Send NTLMv2 response only. Refuse LM & NTLM
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Control\Lsa
+    name: LmCompatibilityLevel
+    data: "{{ win_network_security_lan_manager_auth_level_compatibility_level }}"
+    type: dword
+  register: win_network_security_lan_manager_auth_level_apply_setting
+  when: >
+    (win_network_security_lan_manager_auth_level_current_setting.stdout | trim | int) != (win_network_security_lan_manager_auth_level_compatibility_level | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      LmCompatibilityLevel is already set to {{ win_network_security_lan_manager_auth_level_current_setting.stdout | trim }},
+      which meets the requirement (5 = Send NTLMv2 response only. Refuse LM & NTLM)
+  when: >
+    (win_network_security_lan_manager_auth_level_current_setting.stdout | trim | int) == (win_network_security_lan_manager_auth_level_compatibility_level | int)

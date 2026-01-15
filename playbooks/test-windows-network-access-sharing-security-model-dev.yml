@@ -1,0 +1,14 @@
+---
+# Test playbook for win_network_access_sharing_security_model role (Development)
+# Usage: ansible-playbook -i ../inventory.ini playbooks/test-windows-network-access-sharing-security-model-dev.yml
+
+- name: Test Windows Network Access Sharing Security Model Role (Development)
+  hosts: windows
+  gather_facts: true
+  become: false
+  roles:
+    - role: ../roles/win_network_access_sharing_security_model  # noqa role-name[path]
+  post_tasks:
+    - name: Verify role completed successfully
+      ansible.builtin.debug:
+        msg: "Role execution completed. Check the output above for ForceGuest configuration."

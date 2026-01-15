@@ -1,0 +1,14 @@
+---
+# Test playbook for win_audit_sensitive_privilege_use role (Development)
+# Usage: ansible-playbook -i inventory.ini playbooks/test-windows-audit-sensitive-privilege-use-dev.yml
+
+- name: Test Windows Audit Sensitive Privilege Use Role (Development)
+  hosts: windows
+  gather_facts: true
+  become: false
+  roles:
+    - role: ../roles/win_audit_sensitive_privilege_use  # noqa role-name[path]
+  post_tasks:
+    - name: Verify role completed successfully
+      ansible.builtin.debug:
+        msg: "Role execution completed. Check the output above for Sensitive Privilege Use audit policy configuration."

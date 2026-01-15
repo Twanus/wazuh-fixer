@@ -1,0 +1,41 @@
+---
+# tasks file for win_ssdp_discovery_service_disabled
+- name: Check current SSDP Discovery (SSDPSRV) Start setting
+  ansible.windows.win_shell: |
+    $regPath = "HKLM:\SYSTEM\CurrentControlSet\Services\SSDPSRV"
+    $regName = "Start"
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $regName
+    if ($null -eq $value) {
+      Write-Output "NOT_SET"
+    } else {
+      Write-Output $value
+    }
+  register: win_ssdp_discovery_service_disabled_current_setting
+  changed_when: false
+
+- name: Display current SSDP Discovery (SSDPSRV) Start setting
+  ansible.builtin.debug:
+    msg: >
+      Current SSDP Discovery (SSDPSRV) Start: {{ win_ssdp_discovery_service_disabled_current_setting.stdout | trim }}
+      (0=Boot, 1=System, 2=Auto, 3=Manual, 4=Disabled [recommended])
+
+- name: Set SSDP Discovery (SSDPSRV) Start to Disabled
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Services\SSDPSRV
+    name: Start
+    data: "{{ win_ssdp_discovery_service_disabled_start_value }}"
+    type: dword
+  register: win_ssdp_discovery_service_disabled_apply_setting
+  when: >
+    (win_ssdp_discovery_service_disabled_current_setting.stdout | trim) == "NOT_SET" or
+    (win_ssdp_discovery_service_disabled_current_setting.stdout | trim | int) != (win_ssdp_discovery_service_disabled_start_value | int)
+  changed_when: true
+
+- name: Report if no changes were needed
+  ansible.builtin.debug:
+    msg: >
+      SSDP Discovery (SSDPSRV) Start is already set to {{ win_ssdp_discovery_service_disabled_current_setting.stdout | trim }},
+      which meets the requirement (4 = Disabled)
+  when: >
+    (win_ssdp_discovery_service_disabled_current_setting.stdout | trim) != "NOT_SET" and
+    (win_ssdp_discovery_service_disabled_current_setting.stdout | trim | int) == (win_ssdp_discovery_service_disabled_start_value | int)

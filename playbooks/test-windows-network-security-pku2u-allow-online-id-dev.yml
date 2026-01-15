@@ -1,0 +1,14 @@
+---
+# Test playbook for win_network_security_pku2u_allow_online_id role (Development)
+# Usage: ansible-playbook -i inventory.ini playbooks/test-windows-network-security-pku2u-allow-online-id-dev.yml
+
+- name: Test Windows Network Security PKU2U Allow Online ID Role (Development)
+  hosts: windows
+  gather_facts: true
+  become: false
+  roles:
+    - role: ../roles/win_network_security_pku2u_allow_online_id  # noqa role-name[path]
+  post_tasks:
+    - name: Verify role completed successfully
+      ansible.builtin.debug:
+        msg: "Role execution completed. Check the output above for AllowOnlineID configuration."
