@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Wazuh Alerts Viewer</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header class="header">
+        <div>
+          <h1>Wazuh Alerts Viewer</h1>
+          <p class="muted">
+            Load <code>alerts.json</code>, then filter/search and click a row to see full JSON.
+          </p>
+        </div>
+      </header>
+
+      <section class="card">
+        <h2>Load</h2>
+        <div class="grid2">
+          <div class="stack">
+            <label for="fileInput"><span>Load from file</span></label>
+            <input id="fileInput" type="file" accept=".json,.jsonl,application/json" />
+            <div class="hint muted">
+              Works even without a web server.
+            </div>
+          </div>
+
+          <div class="stack">
+            <label for="fetchPath"><span>Load via fetch</span></label>
+            <div class="row">
+              <input id="fetchPath" type="text" value="../alerts.json" />
+              <button id="fetchBtn" type="button">Fetch</button>
+            </div>
+            <div class="hint muted">
+              Requires serving this folder over HTTP (see <code>viewer/README.md</code>).
+            </div>
+          </div>
+        </div>
+
+        <div class="grid3">
+          <div class="stack">
+            <label for="maxAlerts"><span>Max alerts to load</span></label>
+            <input id="maxAlerts" type="number" min="0" step="1" value="0" />
+            <div class="hint muted">
+              <code>0</code> means load everything.
+            </div>
+          </div>
+
+          <div class="stack">
+            <label for="searchMode"><span>Search mode</span></label>
+            <select id="searchMode">
+              <option value="fields" selected>Important fields only (fast)</option>
+              <option value="full">Full JSON (slow, but thorough)</option>
+            </select>
+            <div class="hint muted">
+              Full JSON search can be heavy on large files.
+            </div>
+          </div>
+
+          <div class="stack">
+            <label><span>Actions</span></label>
+            <div class="row">
+              <button id="clearBtn" type="button" class="secondary">Clear</button>
+              <button id="stopBtn" type="button" class="danger" disabled>Stop loading</button>
+            </div>
+            <div class="hint muted">
+              Stop ends parsing after the current chunk.
+            </div>
+          </div>
+        </div>
+
+        <div class="status">
+          <div class="row wrap">
+            <div class="pill"><strong>Loaded:</strong> <span id="loadedCount">0</span></div>
+            <div class="pill"><strong>Matched:</strong> <span id="matchedCount">0</span></div>
+            <div class="pill"><strong>Shown:</strong> <span id="shownCount">0</span></div>
+            <div class="pill"><strong>Parse:</strong> <span id="parseState">idle</span></div>
+          </div>
+          <div class="progressRow">
+            <progress id="progress" value="0" max="1"></progress>
+            <div class="muted small" id="progressText"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Filters</h2>
+        <div class="grid4">
+          <div class="stack">
+            <label for="q"><span>Text search</span></label>
+            <input id="q" type="text" placeholder="e.g. dpkg, windows, rb1, 2902, EventChannel..." />
+          </div>
+
+          <div class="stack">
+            <label for="agent"><span>Agent contains</span></label>
+            <input id="agent" type="text" placeholder="e.g. rb1" />
+          </div>
+
+          <div class="stack">
+            <label for="decoder"><span>Decoder contains</span></label>
+            <input id="decoder" type="text" placeholder="e.g. dpkg-decoder" />
+          </div>
+
+          <div class="stack">
+            <label for="location"><span>Location contains</span></label>
+            <input id="location" type="text" placeholder="e.g. /var/log" />
+          </div>
+        </div>
+
+        <div class="grid4">
+          <div class="stack">
+            <label for="ruleId"><span>Rule ID</span></label>
+            <input id="ruleId" type="text" placeholder="e.g. 2902" />
+          </div>
+
+          <div class="stack">
+            <label for="group"><span>Group contains</span></label>
+            <input id="group" type="text" placeholder="e.g. dpkg" />
+          </div>
+
+          <div class="stack">
+            <label for="minLevel"><span>Min level</span></label>
+            <input id="minLevel" type="number" min="0" step="1" placeholder="0" />
+          </div>
+
+          <div class="stack">
+            <label for="maxLevel"><span>Max level</span></label>
+            <input id="maxLevel" type="number" min="0" step="1" placeholder="15" />
+          </div>
+        </div>
+
+        <div class="grid4">
+          <div class="stack">
+            <label for="fromTs"><span>From (local time)</span></label>
+            <input id="fromTs" type="datetime-local" />
+          </div>
+
+          <div class="stack">
+            <label for="toTs"><span>To (local time)</span></label>
+            <input id="toTs" type="datetime-local" />
+          </div>
+
+          <div class="stack">
+            <label for="sortBy"><span>Sort by</span></label>
+            <select id="sortBy">
+              <option value="timestamp" selected>Timestamp</option>
+              <option value="level">Level</option>
+              <option value="ruleId">Rule ID</option>
+              <option value="agent">Agent</option>
+              <option value="decoder">Decoder</option>
+            </select>
+          </div>
+
+          <div class="stack">
+            <label for="sortDir"><span>Sort direction</span></label>
+            <select id="sortDir">
+              <option value="desc" selected>Descending</option>
+              <option value="asc">Ascending</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid3">
+          <div class="stack">
+            <label for="showLimit"><span>Show limit</span></label>
+            <input id="showLimit" type="number" min="10" step="10" value="500" />
+            <div class="hint muted">
+              Keeps the table fast.
+            </div>
+          </div>
+
+          <div class="stack">
+            <label><span>&nbsp;</span></label>
+            <button id="exportBtn" type="button" class="secondary" disabled>Export matched (JSONL)</button>
+            <div class="hint muted">
+              Exports matched alerts as JSON Lines.
+            </div>
+          </div>
+
+          <div class="stack">
+            <label><span>&nbsp;</span></label>
+            <button id="resetFiltersBtn" type="button" class="secondary">Reset filters</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Results</h2>
+        <div class="tableWrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th class="num">Level</th>
+                <th>Rule</th>
+                <th>Description</th>
+                <th>Agent</th>
+                <th>Decoder</th>
+                <th>Location</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+        <div class="muted small">
+          Tip: click a row to open the full alert JSON.
+        </div>
+      </section>
+    </div>
+
+    <dialog id="detailDialog">
+      <form method="dialog" class="dialogForm">
+        <div class="dialogHeader">
+          <div class="dialogTitle" id="detailTitle">Alert</div>
+          <div class="dialogActions">
+            <button id="copyBtn" type="button" class="secondary">Copy JSON</button>
+            <button type="submit">Close</button>
+          </div>
+        </div>
+        <pre id="detailPre"></pre>
+      </form>
+    </dialog>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
